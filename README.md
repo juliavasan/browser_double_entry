@@ -61,6 +61,10 @@ src/browser_double_entry/
   adapters/salesforce.py
 ```
 
+## Architecture
+
+See [`docs/architecture.md`](docs/architecture.md).
+
 ## Adding a system
 
 Subclass `Adapter` in `adapters/`, implement `enter(page, record)`, and register it in
