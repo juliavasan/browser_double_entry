@@ -1,0 +1,13 @@
+{
+  "records": [
+    {
+      "system": "salesforce",
+      "object": "Contact",
+      "fields": {
+        "FirstName": "Ada",
+        "LastName": "Lovelace",
+        "Email": "ada@example.com"
+      }
+    }
+  ]
+}
