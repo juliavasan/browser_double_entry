@@ -1,0 +1,10 @@
+{
+  "name": "bulk-entry-extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Example browser extension that enters many records from a JSON file into a web app's forms.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}

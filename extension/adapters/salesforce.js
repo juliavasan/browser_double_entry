@@ -1,4 +1,5 @@
-const SALESFORCE_URLS = ["https://*.lightning.force.com/*", "https://*.my.salesforce.com/*"];
+// Adapter for Salesforce Lightning. See adapters/template.js for what each
+// property means; this file is a filled-in example of it.
 
 // Lightning names the inputs of compound fields (Name, addresses) differently
 // from their API names. Other fields use the API name as the input name.
@@ -10,152 +11,49 @@ const INPUT_NAMES = {
   Suffix: "suffix",
 };
 
-export class SalesforceAdapter {
-  name = "salesforce";
-
-  // Finds the org from a Salesforce tab the user is already logged in to.
-  async prepare() {
-    const tabs = await chrome.tabs.query({ url: SALESFORCE_URLS });
-    this.base = tabs.map((t) => orgBaseUrl(t.url)).find(Boolean);
-    if (!this.base) {
-      throw new Error("Open Salesforce in this browser and log in, then try again.");
-    }
-    return this.base;
-  }
-
-  // parent is { object, id } of an already saved record, or null.
-  async enter(tabId, record, parent = null) {
-    let url = `${this.base}/lightning/o/${record.object}/new`;
-    if (parent) {
-      // Opens the form with the link to the parent already filled in, so the
-      // lookup field never has to be typed into.
-      url += `?defaultFieldValues=${linkField(parent.object)}=${parent.id}`;
-    }
-    await navigate(tabId, url);
-
-    const tab = await chrome.tabs.get(tabId);
-    if (!tab.url?.startsWith(this.base)) {
-      return { ok: false, message: "Salesforce asked you to log in again. Log in, then start again." };
-    }
-
-    const result = await runInPage(tabId, fillForm, [record.fields, INPUT_NAMES, true]);
-    if (!result.ok) return result;
-
-    const saved = await waitForUrl(tabId, RECORD_URL, 20_000);
-    if (saved) return { ok: true, message: saved, id: RECORD_URL.exec(saved)[1] };
-
-    const errors = await runInPage(tabId, readErrors, []);
-    return { ok: false, message: errors || "Salesforce did not save the record" };
-  }
-}
-
-// Lightning can still redirect after the page reports it has loaded, which
-// cuts off a script mid-run. Retry a few times in that case.
-async function runInPage(tabId, func, args) {
-  for (let attempt = 1; ; attempt++) {
-    try {
-      const [{ result }] = await chrome.scripting.executeScript({ target: { tabId }, func, args });
-      return result;
-    } catch (e) {
-      if (attempt >= 3 || !/removed|destroyed|navigat/i.test(e.message)) throw e;
-      await new Promise((r) => setTimeout(r, 1000));
-    }
-  }
-}
-
+const BASE_URL = /^(https:\/\/[^/]+\.(?:lightning\.force|my\.salesforce)\.com)\//;
 const RECORD_URL = /\/lightning\/r\/(?:\w+\/)?([a-zA-Z0-9]{15,18})\/view/;
+
+export default {
+  name: "salesforce",
+  label: "Salesforce",
+
+  // Must match host_permissions in manifest.json.
+  urls: ["https://*.lightning.force.com/*", "https://*.my.salesforce.com/*"],
+
+  baseUrl(tabUrl) {
+    return BASE_URL.exec(tabUrl)?.[1] ?? null;
+  },
+
+  // An expired session redirects to the login page on another domain.
+  isLoggedIn(tabUrl, base) {
+    return tabUrl.startsWith(base);
+  },
+
+  // The parent's ID goes in the address, so the child's form opens with the
+  // link already filled in and nobody types into the lookup field.
+  newRecordUrl(base, object, parent) {
+    const url = `${base}/lightning/o/${object}/new`;
+    return parent ? `${url}?defaultFieldValues=${linkField(parent.object)}=${parent.id}` : url;
+  },
+
+  inputSelector(object, field) {
+    const name = INPUT_NAMES[field] ?? field;
+    return `input[name="${name}"], textarea[name="${name}"]`;
+  },
+
+  saveButtonText: "Save",
+
+  // After a save, Lightning shows the new record at /lightning/r/<Object>/<id>/view.
+  savedRecordId(tabUrl) {
+    return RECORD_URL.exec(tabUrl)?.[1] ?? null;
+  },
+
+  errorSelector: ".slds-form-element__help, .pageLevelErrors, [role='alert']",
+};
 
 // The child's field that points at its parent: AccountId for Account,
 // Community__c for a custom object Community__c.
 export function linkField(parentObject) {
   return parentObject.endsWith("__c") ? parentObject : `${parentObject}Id`;
-}
-
-export function orgBaseUrl(url) {
-  const m = /^(https:\/\/[^/]+\.(?:lightning\.force|my\.salesforce)\.com)\//.exec(url ?? "");
-  return m ? m[1] : null;
-}
-
-function navigate(tabId, url) {
-  return new Promise((resolve, reject) => {
-    let sawLoading = false;
-    const timer = setTimeout(() => done(new Error("Salesforce page did not load")), 30_000);
-    function onUpdated(id, info) {
-      if (id !== tabId) return;
-      if (info.status === "loading") sawLoading = true;
-      if (info.status === "complete" && sawLoading) done();
-    }
-    function done(err) {
-      clearTimeout(timer);
-      chrome.tabs.onUpdated.removeListener(onUpdated);
-      err ? reject(err) : resolve();
-    }
-    chrome.tabs.onUpdated.addListener(onUpdated);
-    chrome.tabs.update(tabId, { url }).catch(done);
-  });
-}
-
-async function waitForUrl(tabId, pattern, timeout) {
-  const end = Date.now() + timeout;
-  while (Date.now() < end) {
-    const tab = await chrome.tabs.get(tabId);
-    if (pattern.test(tab.url ?? "")) return tab.url;
-    await new Promise((r) => setTimeout(r, 300));
-  }
-  return null;
-}
-
-// Runs inside the Salesforce page. It is serialized by executeScript, so it
-// must not use anything from outside its own body.
-async function fillForm(fields, inputNames, save) {
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  // Lightning components may use shadow DOM, so search inside shadow roots too.
-  const deepAll = (selector) => {
-    const out = [];
-    const walk = (root) => {
-      out.push(...root.querySelectorAll(selector));
-      for (const el of root.querySelectorAll("*")) if (el.shadowRoot) walk(el.shadowRoot);
-    };
-    walk(document);
-    return out;
-  };
-  const visible = (el) => el.getClientRects().length > 0;
-  const findSave = () =>
-    deepAll("button").find((b) => b.textContent.trim() === "Save" && visible(b));
-  const findInput = (name) =>
-    deepAll(`input[name="${name}"], textarea[name="${name}"]`).find(visible);
-
-  const end = Date.now() + 30_000;
-  while (!findSave() && Date.now() < end) await sleep(300);
-  const saveButton = findSave();
-  if (!saveButton) return { ok: false, message: "the New record form did not appear" };
-
-  for (const [apiName, value] of Object.entries(fields)) {
-    const input = findInput(inputNames[apiName] ?? apiName);
-    if (!input) return { ok: false, message: `no input for field ${apiName}` };
-    const proto = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    input.focus();
-    Object.getOwnPropertyDescriptor(proto, "value").set.call(input, String(value));
-    input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-    input.blur();
-    if (input.value !== String(value)) {
-      return { ok: false, message: `field ${apiName} did not accept the value` };
-    }
-  }
-
-  if (save) saveButton.click();
-  return { ok: true };
-}
-
-// Runs inside the Salesforce page after a save that did not finish.
-function readErrors() {
-  const out = [];
-  const walk = (root) => {
-    out.push(...root.querySelectorAll(".slds-form-element__help, .pageLevelErrors, [role='alert']"));
-    for (const el of root.querySelectorAll("*")) if (el.shadowRoot) walk(el.shadowRoot);
-  };
-  walk(document);
-  const texts = out.map((e) => e.textContent.trim()).filter(Boolean);
-  return [...new Set(texts)].join("; ").slice(0, 500);
 }

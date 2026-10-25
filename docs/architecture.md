@@ -2,103 +2,60 @@
 
 ## Goal
 
-People often have to type the same data into several systems by hand. This proof of
-concept shows another way: describe the data once in a JSON file, and let a local
-Python process enter it into each system through the browser.
-
-Salesforce is the first target system. More will follow.
+Show how a browser extension can enter many records into a web app from one
+file, by filling in the app's own forms. People type the same kinds of records
+in by hand, one form at a time; this does it for them, in their own logged-in
+browser session.
 
 ## Flow
 
 ```
-┌────────────┐     ┌──────────────────────┐     ┌──────────────────┐     ┌──────────────┐
-│ input.json │ ──▶ │ bde (Python process) │ ──▶ │ Chrome over CDP  │ ──▶ │ Salesforce … │
-└────────────┘     └──────────┬───────────┘     └──────────────────┘     └──────────────┘
-                              │
-                              ▼
-                        JSON report
+records.json → app page (app.js) → engine (lib/engine.js) → work tab: "New" form → saved record
+                                         ↑ adapter (adapters/<system>.js) says where and how
 ```
 
-1. **Load:** `input.py` reads the JSON file and checks every record.
-2. **Plan:** `cli.py` makes sure there's an adapter for every `system` named in the
-   input. `--dry-run` stops here and prints the plan.
-3. **Connect:** `browser.py` attaches to a Chrome the user already started with
-   `--remote-debugging-port`. The user logs in to each system in that Chrome
-   window, so the tool never handles passwords.
-4. **Enter:** each record goes to the adapter for its system, which drives the
-   page: it navigates, fills in the fields and saves.
-5. **Report:** a JSON list with one entry per record (`ok`, `message`) is printed
-   to stdout. The exit code is `0` if every record worked and `1` if any failed.
+1. **Pick a file.** `lib/input.js` reads the JSON and checks every record,
+   children included. The page shows how many records of each object are ready.
+2. **Find the system.** For each system in the file, the engine finds a tab the
+   user already has open and logged in, and takes the system's address from it.
+3. **Enter each record.** In one work tab, for each record:
+   1. Open the adapter's `newRecordUrl`. For a child, the parent's ID goes in it.
+   2. Check the session didn't expire (`isLoggedIn`).
+   3. Run `fillForm` inside the page: wait for the save button, fill each field
+      found by `inputSelector`, click save.
+   4. Wait until the address shows a saved record (`savedRecordId`). If it
+      doesn't, read the page's error messages (`errorSelector`).
+4. **Children.** After a record is saved, its children are entered with its ID as
+   their parent. If it wasn't saved, they're marked as skipped.
+5. **Report.** Each record gets a row with ✓ and a link, ✗ and the reason, or –
+   for skipped. The results can be saved as a JSON file.
 
 ## Components
 
-| Module | Responsibility |
+| File | Responsibility |
 | --- | --- |
-| `cli.py` | Parses arguments, runs the steps above, prints the report |
-| `input.py` | `Record` dataclass, JSON loading and validation |
-| `browser.py` | Connects to Chrome over CDP (Playwright `connect_over_cdp`) |
-| `adapters/base.py` | `Adapter` interface and `Result` |
-| `adapters/salesforce.py` | Creates records through the Salesforce Lightning UI |
-| `adapters/__init__.py` | Registry that maps a system name to its adapter class |
+| `manifest.json` | Name and permissions: `scripting`, plus the app's domains only |
+| `background.js` | Toolbar icon opens the app page in a tab |
+| `app.html`, `app.js` | File picker, run, results table, download |
+| `lib/input.js` | JSON reading and validation, `walk()` over records and children |
+| `lib/engine.js` | `findBaseUrl()` and `enterRecord()`: one record, start to finish |
+| `lib/page.js` | Tab helpers (`navigate`, `waitForTabUrl`, `runInPage`) and in-page functions (`fillForm`, `readErrors`) |
+| `adapters/*.js` | One object per system: addresses, selectors, success check |
 
-## Input format
+## Design choices
 
-```json
-{
-  "records": [
-    {
-      "system": "salesforce",
-      "object": "Contact",
-      "fields": {"FirstName": "Ada", "LastName": "Lovelace"}
-    }
-  ]
-}
-```
-
-- `system`: which adapter handles the record.
-- `object`: the kind of record in that system, such as a Salesforce object API name.
-- `fields`: the field names and values to enter.
-
-## Adapter contract
-
-```python
-class Adapter(ABC):
-    name: str
-    def enter(self, page: Page, record: Record) -> Result: ...
-```
-
-An adapter gets a live Playwright `Page` and a single record, and returns a
-`Result`. If an adapter raises an exception, the CLI records it as a failure and
-moves on to the next record, so one bad record doesn't stop the run.
-
-To add a system:
-
-1. Create `adapters/<system>.py` with a subclass of `Adapter`.
-2. Register it in `ADAPTERS` in `adapters/__init__.py`.
-3. Use the new `system` name in the input JSON.
-
-## Why drive the browser instead of calling APIs
-
-- It works the same way a person does, using the access they already have. No API
-  keys, connected apps or admin setup are needed, which matters for a POC.
-- It's the same approach for every system, including ones that have no API.
-- The tradeoff is that UI automation breaks more easily than API calls. Adapters
-  should keep selectors in one place and prefer stable hooks such as roles,
-  labels and `name` attributes.
-
-## Current limitations
-
-- The Salesforce adapter hasn't been tested against a real org yet. Lightning
-  shows field labels that can differ from API names, so the field mapping still
-  needs work (see the `TODO` in `salesforce.py`).
-- Records are entered one at a time, in a single tab.
-- Nothing is rolled back on failure. If a record fails partway through a run, the
-  records before it stay saved.
-- It runs only on the user's own machine.
-
-## Possible next steps
-
-- Map Salesforce field labels to API names, per org.
-- Add a second system's adapter.
-- Let one input record go to several systems.
-- Save reports to `reports/` with a timestamp, plus screenshots of failures.
+- **A tab, not a popup.** A popup closes when the run switches to the work tab,
+  which would stop the run. The app page stays open in its own tab.
+- **No CDP or debugger.** The extension fills fields with a script in the page,
+  so it needs no debugging port and shows no "being controlled" warning. The
+  cost is that script events aren't "trusted"; plain inputs accept them, but
+  some widgets may not. `chrome.debugger` is the fallback for those.
+- **Search inside shadow DOM.** Apps built from web components (Salesforce
+  Lightning, many design systems) hide inputs inside shadow roots.
+- **Native value setter plus events.** Setting `value` directly isn't noticed by
+  frameworks like React or Lightning; the native setter followed by `input` and
+  `change` events is.
+- **Wait for the form, not the network.** Single-page apps keep connections
+  open, so "network idle" never comes. The engine waits for the save button.
+- **Link children through the address.** Prefilling the parent from the form's
+  address avoids lookup fields, the most fragile part of a form.

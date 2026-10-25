@@ -1,7 +1,7 @@
-import { SalesforceAdapter } from "./salesforce.js";
+import salesforce from "./salesforce.js";
 
-// To add a system: write an adapter with prepare() and enter(tabId, record),
-// and register it here under the name used in the JSON "system" field.
+// The systems the extension can enter records into, by the name used in the
+// JSON "system" field. To add one, copy template.js and register it here.
 export const ADAPTERS = {
-  salesforce: SalesforceAdapter,
+  [salesforce.name]: salesforce,
 };

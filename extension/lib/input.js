@@ -1,7 +1,11 @@
 export class InputError extends Error {}
 
-// Same rules as the Python tool's input.py. A record may have "children":
-// records of another object that are linked to it. They use the parent's system.
+// Reads the JSON file the user picked:
+//
+//   { "records": [ { "system": "...", "object": "...", "fields": {...}, "children": [...] } ] }
+//
+// "children" are records of another object linked to their parent, such as an
+// Account's Contacts. They use the parent's system, so they only need "object".
 export function parseRecords(text) {
   let data;
   try {
@@ -15,6 +19,14 @@ export function parseRecords(text) {
     throw new InputError("expected an object with a 'records' list");
   }
   return raw.map((item, i) => parseRecord(item, `records[${i}]`, null));
+}
+
+// Every record in the file, children included, parents before their children.
+export function* walk(records) {
+  for (const r of records) {
+    yield r;
+    yield* walk(r.children);
+  }
 }
 
 function parseRecord(item, path, system) {
