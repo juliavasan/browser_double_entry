@@ -1,0 +1,37 @@
+{
+  "records": [
+    {
+      "system": "salesforce",
+      "object": "Contact",
+      "fields": {
+        "FirstName": "Ada",
+        "LastName": "Lovelace",
+        "Email": "ada.lovelace@example.com",
+        "Phone": "+1 415 555 0101",
+        "Title": "Head of Analytics"
+      }
+    },
+    {
+      "system": "salesforce",
+      "object": "Contact",
+      "fields": {
+        "FirstName": "Grace",
+        "LastName": "Hopper",
+        "Email": "grace.hopper@example.com",
+        "Phone": "+1 415 555 0102",
+        "Title": "VP Engineering"
+      }
+    },
+    {
+      "system": "salesforce",
+      "object": "Contact",
+      "fields": {
+        "FirstName": "Alan",
+        "LastName": "Turing",
+        "Email": "alan.turing@example.com",
+        "Phone": "+1 415 555 0103",
+        "Title": "Research Lead"
+      }
+    }
+  ]
+}
