@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Browser Double Entry",
+  "version": "0.1.0",
+  "description": "Enter records from one JSON file into Salesforce using your normal browser session.",
+  "action": {
+    "default_title": "Browser Double Entry"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["scripting"],
+  "host_permissions": [
+    "https://*.lightning.force.com/*",
+    "https://*.my.salesforce.com/*"
+  ]
+}

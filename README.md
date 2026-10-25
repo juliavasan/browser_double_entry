@@ -38,6 +38,28 @@ playwright install chromium
 
    Add `--dry-run` to validate the input and see the plan without touching the browser.
 
+## Chrome extension
+
+The `extension/` folder has the same tool as a Chrome extension, for people who
+can't run commands in a terminal. It runs in the user's normal Chrome and
+Salesforce login, and doesn't need CDP or a debugging port.
+
+Install it for testing:
+
+1. Open `chrome://extensions` and turn on **Developer mode** (top right).
+2. Click **Load unpacked** and choose the `extension` folder.
+3. Pin **Browser Double Entry** from the puzzle-piece menu in the toolbar.
+
+Use it:
+
+1. Log in to Salesforce in Chrome.
+2. Click the extension icon. A page opens in a new tab.
+3. Choose a JSON file (for example `examples/contacts.json`) and click **Start**.
+4. Each record's result appears in the table, with a link to the saved record.
+
+It only has permission for `*.lightning.force.com` and `*.my.salesforce.com`, and
+it sends nothing anywhere else.
+
 ## Input format
 
 See [`examples/sample.json`](examples/sample.json).
