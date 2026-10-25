@@ -15,17 +15,16 @@ const ui = {
   fileName: $("file-name"),
   fileSize: $("file-size"),
   fileError: $("file-error"),
-  reviewCard: $("review-card"),
+  recordsSection: $("records-section"),
   counts: $("counts"),
   tbody: document.querySelector("#records tbody"),
-  runCard: $("run-card"),
   start: $("start"),
   runReady: $("run-ready"),
   runProgress: $("run-progress"),
   progressText: $("progress-text"),
   progressCount: $("progress-count"),
   progressBar: $("progress-bar"),
-  runDone: $("run-done"),
+  resultsCard: $("results-card"),
   runError: $("run-error"),
   download: $("download"),
   again: $("again"),
@@ -108,9 +107,7 @@ async function loadFile(file) {
   }
 
   renderReview();
-  $("howto").hidden = true;
-  ui.reviewCard.hidden = false;
-  ui.runCard.hidden = false;
+  ui.recordsSection.hidden = false;
   await checkConnection();
 }
 
@@ -123,12 +120,10 @@ function reset() {
   ui.dropzone.hidden = false;
   ui.fileChip.hidden = true;
   ui.fileError.hidden = true;
-  $("howto").hidden = false;
-  ui.reviewCard.hidden = true;
-  ui.runCard.hidden = true;
+  ui.recordsSection.hidden = true;
   ui.runReady.hidden = false;
   ui.runProgress.hidden = true;
-  ui.runDone.hidden = true;
+  ui.resultsCard.hidden = true;
   ui.runError.hidden = true;
   ui.tbody.replaceChildren();
   updateStart();
@@ -196,7 +191,7 @@ ui.start.addEventListener("click", async () => {
     }
     workTab = await chrome.tabs.create({ url: "about:blank", active: true });
     await enterAll(records, null, bases, workTab.id, total);
-    showSummary();
+    showSummary(bases);
   } catch (e) {
     showMessage(ui.runError, `The run stopped: ${e.message}`);
     ui.runReady.hidden = false;
@@ -259,13 +254,17 @@ function showResult(row, result) {
   }
 }
 
-function showSummary() {
+function showSummary(bases) {
   const saved = report.filter((r) => r.ok).length;
   const skipped = report.filter((r) => r.skipped).length;
   $("sum-saved").textContent = saved;
   $("sum-failed").textContent = report.length - saved - skipped;
   $("sum-skipped").textContent = skipped;
-  ui.runDone.hidden = false;
+  const first = records[0];
+  $("open-salesforce").href = `${bases[first.system]}/lightning/o/${first.object}/list?filterName=Recent`;
+  $("open-salesforce").textContent = `Open ${plural(first.object, 2)} in Salesforce ↗`;
+  ui.resultsCard.hidden = false;
+  ui.resultsCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 ui.download.addEventListener("click", () => {

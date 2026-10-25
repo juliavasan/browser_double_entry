@@ -65,6 +65,7 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 39. Read CSV (own parser) and Excel (bundled SheetJS, no network)
 - [x] 40. Add `examples/accounts-contacts.xlsx` and `.csv`, downloadable from the page
 - [x] 41. Simplify the page around spreadsheets: example table and three rules; JSON as an option
+- [x] 43. Simplify the page: steps are Prepare your file → Upload it → Check the results; say it's a Salesforce utility and an example project
 - [ ] 42. Reload the extension and run `examples/accounts-contacts.xlsx`
 
 ## Later

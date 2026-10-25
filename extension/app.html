@@ -23,23 +23,26 @@
 
   <main>
     <section class="intro">
-      <h1>Create Accounts and their Contacts in bulk</h1>
+      <h1>Create Accounts and Contacts from a spreadsheet</h1>
       <p>
-        List your Accounts and their Contacts in a spreadsheet, and Bulk Entry fills in and saves
-        Salesforce's own New Account and New Contact forms for you, one record at a time. It works
-        in the Salesforce session you're already logged in to, and links each Contact to its
-        Account automatically.
+        A Salesforce utility that creates many Accounts and their Contacts at once, so you don't
+        enter them one by one. It fills in Salesforce's own forms, in the session you're already
+        logged in to.
+      </p>
+      <p class="example-note">
+        This is an example project. Adapt it to your own Salesforce objects or another web app:
+        <a class="link" href="https://github.com/juliavasan/bulk-entry-extension" target="_blank">see how on GitHub</a>.
       </p>
       <ol class="steps">
-        <li><span class="step-num">1</span><div><strong>Choose a file</strong><span>An Excel or CSV sheet of Accounts and their Contacts</span></div></li>
-        <li><span class="step-num">2</span><div><strong>Review</strong><span>Check every record before anything is saved</span></div></li>
-        <li><span class="step-num">3</span><div><strong>Create</strong><span>Watch each record being saved, then check the results</span></div></li>
+        <li><span class="step-num">1</span><div><strong>Prepare your file</strong><span>Put your Accounts and Contacts in Excel or CSV, and check them there</span></div></li>
+        <li><span class="step-num">2</span><div><strong>Upload it</strong><span>Each record is created in Salesforce while you watch</span></div></li>
+        <li><span class="step-num">3</span><div><strong>Check the results</strong><span>See what was saved, then look at the records in Salesforce</span></div></li>
       </ol>
     </section>
 
-    <section class="card" id="file-card">
+    <section class="card">
       <div class="card-head">
-        <h2><span class="step-num small">1</span>Choose a file</h2>
+        <h2><span class="step-num small">1</span>Prepare your file</h2>
         <span class="samples">Download a sample:
           <a class="link" href="sample.xlsx" download="accounts-contacts-sample.xlsx">Excel</a>
           <a class="link" href="sample.csv" download="accounts-contacts-sample.csv">CSV</a>
@@ -47,10 +50,57 @@
         </span>
       </div>
 
+      <div class="sheet-wrap">
+        <table class="sheet">
+          <thead>
+            <tr><th>Account.Name</th><th>Account.Phone</th><th>Contact.FirstName</th><th>Contact.LastName</th><th>Contact.Email</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Northwind Logistics</td><td>+1 312 555 0100</td><td>Maria</td><td>Gonzalez</td><td>maria@northwind.example.com</td></tr>
+            <tr><td class="empty"></td><td class="empty"></td><td>James</td><td>Okafor</td><td>james@northwind.example.com</td></tr>
+            <tr><td>Bluebird Clinics</td><td>+1 303 555 0100</td><td>Daniel</td><td>Kim</td><td>daniel@bluebird.example.com</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="rules">
+        <li><strong>One row per Contact.</strong> Account columns come first, then Contact columns.</li>
+        <li><strong>Leave the Account cells empty</strong> to add more Contacts to the Account above.</li>
+        <li><strong>Column names</strong> are the object and the Salesforce field name: <code>Account.Name</code>, <code>Contact.Email</code>.</li>
+        <li><strong>Check your data in the file.</strong> Everything in it is created as is.</li>
+      </ul>
+      <details class="format">
+        <summary>Which fields can I use?</summary>
+        <p><strong>Account:</strong> <code>Name</code> (required), <code>AccountNumber</code>, <code>Site</code>, <code>Phone</code>, <code>Website</code><br>
+        <strong>Contact:</strong> <code>LastName</code> (required), <code>FirstName</code>, <code>Email</code>, <code>Phone</code>, <code>Title</code></p>
+        <p class="muted">Other text fields usually work too: use the field name from Setup → Object Manager → Fields &amp; Relationships. Dropdown, lookup and date fields aren't supported yet.</p>
+      </details>
+      <details class="format">
+        <summary>Using JSON instead?</summary>
+        <p>Each Account lists its Contacts under <code>children</code>:</p>
+        <pre><code>{
+  "records": [
+    {
+      "system": "salesforce",
+      "object": "Account",
+      "fields": { "Name": "Northwind Logistics", "Phone": "+1 312 555 0100" },
+      "children": [
+        { "object": "Contact", "fields": { "FirstName": "Maria", "LastName": "Gonzalez" } }
+      ]
+    }
+  ]
+}</code></pre>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-num small">2</span>Upload it</h2>
+      </div>
+
       <label class="dropzone" id="dropzone">
         <input type="file" id="file" accept=".xlsx,.xls,.csv,.json">
         <svg class="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="dropzone-main">Drop your spreadsheet here, or <u>browse</u></span>
+        <span class="dropzone-main">Drop your file here, or <u>browse</u></span>
         <span class="dropzone-sub">Excel (.xlsx), CSV or JSON</span>
       </label>
 
@@ -63,94 +113,49 @@
 
       <p class="message error" id="file-error" hidden></p>
 
-      <div class="howto" id="howto">
-        <h3>How to set up your spreadsheet</h3>
-        <div class="sheet-wrap">
-          <table class="sheet">
+      <div id="records-section" hidden>
+        <div class="section-head">
+          <h3>Records to create</h3>
+          <div class="counts" id="counts"></div>
+        </div>
+        <div class="table-wrap">
+          <table id="records">
             <thead>
-              <tr><th>Account.Name</th><th>Account.Phone</th><th>Contact.FirstName</th><th>Contact.LastName</th><th>Contact.Email</th></tr>
+              <tr><th class="num">#</th><th>Record</th><th>Type</th><th>Details</th><th>Status</th></tr>
             </thead>
-            <tbody>
-              <tr><td>Northwind Logistics</td><td>+1 312 555 0100</td><td>Maria</td><td>Gonzalez</td><td>maria@northwind.example.com</td></tr>
-              <tr><td class="empty"></td><td class="empty"></td><td>James</td><td>Okafor</td><td>james@northwind.example.com</td></tr>
-              <tr><td>Bluebird Clinics</td><td>+1 303 555 0100</td><td>Daniel</td><td>Kim</td><td>daniel@bluebird.example.com</td></tr>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
-        <ul class="rules">
-          <li><strong>One row per Contact.</strong> Account columns come first, then Contact columns.</li>
-          <li><strong>Leave the Account cells empty</strong> to add more Contacts to the Account above.</li>
-          <li><strong>Column names</strong> are the object and the Salesforce field name: <code>Account.Name</code>, <code>Contact.Email</code>.</li>
-        </ul>
-        <details class="format">
-          <summary>Which fields can I use?</summary>
-          <p><strong>Account:</strong> <code>Name</code> (required), <code>AccountNumber</code>, <code>Site</code>, <code>Phone</code>, <code>Website</code><br>
-          <strong>Contact:</strong> <code>LastName</code> (required), <code>FirstName</code>, <code>Email</code>, <code>Phone</code>, <code>Title</code></p>
-          <p class="muted">Other text fields usually work too: use the field name from Setup → Object Manager → Fields &amp; Relationships. Dropdown, lookup and date fields aren't supported yet.</p>
-        </details>
-        <details class="format">
-          <summary>Using JSON instead?</summary>
-          <p>Each Account lists its Contacts under <code>children</code>:</p>
-          <pre><code>{
-  "records": [
-    {
-      "system": "salesforce",
-      "object": "Account",
-      "fields": { "Name": "Northwind Logistics", "Phone": "+1 312 555 0100" },
-      "children": [
-        { "object": "Contact", "fields": { "FirstName": "Maria", "LastName": "Gonzalez" } }
-      ]
-    }
-  ]
-}</code></pre>
-        </details>
+
+        <div class="run" id="run-ready">
+          <button class="primary" id="start" type="button" disabled>Create records</button>
+          <span class="muted">A Salesforce tab opens so you can watch. Keep this tab open until it's done.</span>
+        </div>
+
+        <div class="run" id="run-progress" hidden>
+          <div class="progress-label"><span id="progress-text"></span><span class="muted" id="progress-count"></span></div>
+          <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+        </div>
+
+        <p class="message error" id="run-error" hidden></p>
       </div>
     </section>
 
-    <section class="card" id="review-card" hidden>
+    <section class="card" id="results-card" hidden>
       <div class="card-head">
-        <h2><span class="step-num small">2</span>Review</h2>
-        <div class="counts" id="counts"></div>
+        <h2><span class="step-num small">3</span>Check the results</h2>
       </div>
-
-      <div class="table-wrap">
-        <table id="records">
-          <thead>
-            <tr><th class="num">#</th><th>Record</th><th>Type</th><th>Details</th><th>Status</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div class="tiles">
+        <div class="tile ok"><span class="tile-num" id="sum-saved">0</span><span>Saved</span></div>
+        <div class="tile fail"><span class="tile-num" id="sum-failed">0</span><span>Failed</span></div>
+        <div class="tile skip"><span class="tile-num" id="sum-skipped">0</span><span>Skipped</span></div>
       </div>
-    </section>
-
-    <section class="card run" id="run-card" hidden>
-      <div class="card-head">
-        <h2><span class="step-num small">3</span>Create in Salesforce</h2>
+      <p class="muted">Each row above links to its record. Failed rows show the reason: fix them in your file, and upload a file with just those rows.</p>
+      <div class="actions">
+        <a class="button primary" id="open-salesforce" target="_blank">Open Accounts in Salesforce ↗</a>
+        <button class="secondary" id="download" type="button">Download results</button>
+        <button class="link-button" id="again" type="button">Upload another file</button>
       </div>
-
-      <div id="run-ready">
-        <p class="muted">A Salesforce tab opens and you can watch each form being filled in. Keep this tab open until the run finishes.</p>
-        <button class="primary" id="start" type="button" disabled>Create records</button>
-      </div>
-
-      <div id="run-progress" hidden>
-        <div class="progress-label"><span id="progress-text"></span><span class="muted" id="progress-count"></span></div>
-        <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
-      </div>
-
-      <div id="run-done" hidden>
-        <div class="tiles">
-          <div class="tile ok"><span class="tile-num" id="sum-saved">0</span><span>Saved</span></div>
-          <div class="tile fail"><span class="tile-num" id="sum-failed">0</span><span>Failed</span></div>
-          <div class="tile skip"><span class="tile-num" id="sum-skipped">0</span><span>Skipped</span></div>
-        </div>
-        <div class="actions">
-          <button class="secondary" id="download" type="button">Download results</button>
-          <button class="link-button" id="again" type="button">Start over with another file</button>
-        </div>
-      </div>
-
-      <p class="message error" id="run-error" hidden></p>
     </section>
   </main>
 
