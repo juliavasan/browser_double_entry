@@ -49,7 +49,7 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 29. Add `adapters/template.js`, a commented starting point for a new system
 - [x] 30. Write `ADAPTING.md`: what to change, and how to find selectors in your own app
 - [x] 31. Replace the Python tests with Node tests (`npm test`), including a check that every adapter is complete
-- [ ] 32. Rename the GitHub repo to `bulk-entry-extension`
+- [x] 32. Rename the GitHub repo to `bulk-entry-extension`
 - [ ] 33. Reload the extension and run `examples/accounts-contacts.json` with the cleaned-up code
 - [ ] 34. Add a license (e.g. MIT)
 
