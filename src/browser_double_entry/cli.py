@@ -37,7 +37,8 @@ def main(argv: list[str] | None = None) -> int:
     results: list[Result] = []
     with connect(args.cdp_url) as browser:
         context = browser.contexts[0] if browser.contexts else browser.new_context()
-        page = context.pages[0] if context.pages else context.new_page()
+        # Work in a new tab so the user's open tabs are left alone.
+        page = context.new_page()
         for r in records:
             try:
                 results.append(adapters[r.system].enter(page, r))

@@ -16,7 +16,9 @@ class SalesforceAdapter(Adapter):
         self.base_url = base_url
 
     def enter(self, page: Page, record: Record) -> Result:
-        base = self.base_url or _org_base_url(page.url)
+        base = self.base_url or next(
+            (b for p in page.context.pages if (b := _org_base_url(p.url))), None
+        )
         if not base:
             return Result(record, ok=False, message="no Salesforce tab open; log in first or pass --salesforce-url")
 
