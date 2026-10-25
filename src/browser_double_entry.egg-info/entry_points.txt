@@ -1,2 +1,0 @@
-[console_scripts]
-bde = browser_double_entry.cli:main
