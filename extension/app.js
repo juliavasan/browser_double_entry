@@ -29,7 +29,8 @@ fileInput.addEventListener("change", async () => {
     return;
   }
 
-  setNote(summary, `${records.length} record${records.length === 1 ? "" : "s"} ready: ${describe(records)}`);
+  const n = total(records);
+  setNote(summary, `${n} record${n === 1 ? "" : "s"} ready: ${describe(records)}`);
   startButton.disabled = records.length === 0;
 });
 
@@ -52,17 +53,32 @@ startButton.addEventListener("click", async () => {
     }
 
     workTab = await chrome.tabs.create({ url: "about:blank", active: true });
-    for (const [i, record] of records.entries()) {
-      const cell = addRow(i, record);
-      let result;
-      try {
-        result = await adapters[record.system].enter(workTab.id, record);
-      } catch (e) {
-        result = { ok: false, message: e.message };
+    const enterAll = async (list, parent) => {
+      for (const record of list) {
+        const cell = addRow(record, parent);
+        let result;
+        if (parent && !parent.id) {
+          result = { ok: false, skipped: true, message: `Skipped: ${parent.object} was not saved` };
+        } else {
+          try {
+            result = await adapters[record.system].enter(workTab.id, record, parent);
+          } catch (e) {
+            result = { ok: false, message: e.message };
+          }
+        }
+        showResult(cell, result);
+        report.push({
+          system: record.system,
+          object: record.object,
+          name: recordName(record),
+          parent: parent ? parent.name : null,
+          ok: result.ok,
+          message: result.message,
+        });
+        await enterAll(record.children, { object: record.object, id: result.id, name: recordName(record) });
       }
-      showResult(cell, result);
-      report.push({ system: record.system, object: record.object, ok: result.ok, message: result.message });
-    }
+    };
+    await enterAll(records, null);
 
     const saved = report.filter((r) => r.ok).length;
     setNote(status, `Done: ${saved} of ${report.length} saved.`, saved < report.length);
@@ -88,11 +104,19 @@ downloadButton.addEventListener("click", () => {
 
 function describe(records) {
   const counts = {};
-  for (const r of records) {
-    const key = `${r.object} → ${r.system}`;
-    counts[key] = (counts[key] ?? 0) + 1;
-  }
+  const count = (list) => {
+    for (const r of list) {
+      const key = `${r.object} → ${r.system}`;
+      counts[key] = (counts[key] ?? 0) + 1;
+      count(r.children);
+    }
+  };
+  count(records);
   return Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(", ");
+}
+
+function total(list) {
+  return list.reduce((n, r) => n + 1 + total(r.children), 0);
 }
 
 function recordName(record) {
@@ -101,18 +125,20 @@ function recordName(record) {
   return name || f.Name || Object.values(f)[0] || record.object;
 }
 
-function addRow(i, record) {
+function addRow(record, parent) {
   const row = tbody.insertRow();
-  for (const text of [i + 1, recordName(record), `${record.object} · ${record.system}`]) {
+  const name = parent ? `↳ ${recordName(record)}` : recordName(record);
+  for (const text of [tbody.rows.length, name, `${record.object} · ${record.system}`]) {
     row.insertCell().textContent = text;
   }
+  if (parent) row.classList.add("child");
   const cell = row.insertCell();
   cell.textContent = "Working…";
   return cell;
 }
 
 function showResult(cell, result) {
-  cell.className = result.ok ? "ok" : "fail";
+  cell.className = result.ok ? "ok" : result.skipped ? "skip" : "fail";
   cell.replaceChildren();
   if (result.ok) {
     const link = document.createElement("a");
@@ -121,7 +147,7 @@ function showResult(cell, result) {
     link.textContent = "Saved, open record";
     cell.append("✓ ", link);
   } else {
-    cell.textContent = `✗ ${result.message}`;
+    cell.textContent = result.skipped ? `– ${result.message}` : `✗ ${result.message}`;
   }
 }
 

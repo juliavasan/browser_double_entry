@@ -72,6 +72,24 @@ See [`examples/sample.json`](examples/sample.json).
 }
 ```
 
+A record can have `children`: records of another object that get linked to it,
+such as an Account's Contacts. Children use their parent's `system`, and the tool
+saves the parent first. See
+[`examples/accounts-contacts.json`](examples/accounts-contacts.json).
+
+```json
+{
+  "records": [
+    {
+      "system": "salesforce", "object": "Account", "fields": {"Name": "Northwind Logistics"},
+      "children": [
+        {"object": "Contact", "fields": {"FirstName": "Maria", "LastName": "Gonzalez"}}
+      ]
+    }
+  ]
+}
+```
+
 ## Layout
 
 ```

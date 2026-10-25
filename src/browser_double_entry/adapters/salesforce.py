@@ -1,6 +1,8 @@
 from playwright.sync_api import Page
 
-from browser_double_entry.adapters.base import Adapter, Result
+import re
+
+from browser_double_entry.adapters.base import Adapter, Parent, Result
 from browser_double_entry.input import Record
 
 # Lightning names the inputs of compound fields (Name, addresses) differently
@@ -12,6 +14,8 @@ INPUT_NAMES = {
     "LastName": "lastName",
     "Suffix": "suffix",
 }
+
+RECORD_URL = re.compile(r"/lightning/r/(?:\w+/)?([a-zA-Z0-9]{15,18})/view")
 
 
 class SalesforceAdapter(Adapter):
@@ -25,7 +29,7 @@ class SalesforceAdapter(Adapter):
     def __init__(self, base_url: str | None = None):
         self.base_url = base_url
 
-    def enter(self, page: Page, record: Record) -> Result:
+    def enter(self, page: Page, record: Record, parent: Parent | None = None) -> Result:
         base = self.base_url or next(
             (b for p in page.context.pages if (b := _org_base_url(p.url))), None
         )
@@ -33,7 +37,11 @@ class SalesforceAdapter(Adapter):
             return Result(record, ok=False, message="no Salesforce tab open; log in first or pass --salesforce-url")
 
         # Lightning keeps connections open, so wait for the form, not for the network.
-        page.goto(f"{base}/lightning/o/{record.object}/new", wait_until="domcontentloaded")
+        url = f"{base}/lightning/o/{record.object}/new"
+        if parent:
+            # Opens the form with the link to the parent already filled in.
+            url += f"?defaultFieldValues={link_field(parent.object)}={parent.id}"
+        page.goto(url, wait_until="domcontentloaded")
         save = page.get_by_role("button", name="Save", exact=True)
         save.wait_for(timeout=30_000)
 
@@ -44,8 +52,13 @@ class SalesforceAdapter(Adapter):
             field.first.fill(str(value))
 
         save.click()
-        page.wait_for_url("**/view", timeout=15_000)
-        return Result(record, ok=True, message=page.url)
+        page.wait_for_url(RECORD_URL, timeout=15_000)
+        return Result(record, ok=True, message=page.url, id=RECORD_URL.search(page.url).group(1))
+
+
+def link_field(parent_object: str) -> str:
+    """The child's field that points at its parent: AccountId for Account."""
+    return parent_object if parent_object.endswith("__c") else f"{parent_object}Id"
 
 
 def _org_base_url(url: str) -> str | None:

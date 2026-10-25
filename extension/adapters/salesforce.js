@@ -23,8 +23,15 @@ export class SalesforceAdapter {
     return this.base;
   }
 
-  async enter(tabId, record) {
-    await navigate(tabId, `${this.base}/lightning/o/${record.object}/new`);
+  // parent is { object, id } of an already saved record, or null.
+  async enter(tabId, record, parent = null) {
+    let url = `${this.base}/lightning/o/${record.object}/new`;
+    if (parent) {
+      // Opens the form with the link to the parent already filled in, so the
+      // lookup field never has to be typed into.
+      url += `?defaultFieldValues=${linkField(parent.object)}=${parent.id}`;
+    }
+    await navigate(tabId, url);
 
     const tab = await chrome.tabs.get(tabId);
     if (!tab.url?.startsWith(this.base)) {
@@ -34,8 +41,8 @@ export class SalesforceAdapter {
     const result = await runInPage(tabId, fillForm, [record.fields, INPUT_NAMES, true]);
     if (!result.ok) return result;
 
-    const url = await waitForUrl(tabId, /\/lightning\/r\/.+\/view/, 20_000);
-    if (url) return { ok: true, message: url };
+    const saved = await waitForUrl(tabId, RECORD_URL, 20_000);
+    if (saved) return { ok: true, message: saved, id: RECORD_URL.exec(saved)[1] };
 
     const errors = await runInPage(tabId, readErrors, []);
     return { ok: false, message: errors || "Salesforce did not save the record" };
@@ -54,6 +61,14 @@ async function runInPage(tabId, func, args) {
       await new Promise((r) => setTimeout(r, 1000));
     }
   }
+}
+
+const RECORD_URL = /\/lightning\/r\/(?:\w+\/)?([a-zA-Z0-9]{15,18})\/view/;
+
+// The child's field that points at its parent: AccountId for Account,
+// Community__c for a custom object Community__c.
+export function linkField(parentObject) {
+  return parentObject.endsWith("__c") ? parentObject : `${parentObject}Id`;
 }
 
 export function orgBaseUrl(url) {

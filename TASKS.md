@@ -29,6 +29,16 @@ Users can't run commands in a terminal, so the tool moves into a Chrome extensio
 - [ ] 19. Write security notes for IT review: permissions used, no outside network calls
 - [ ] 20. Ask IT how extensions get approved and installed, and whether "Load unpacked" is allowed
 
+## Phase 3: Parent and child records (Account → Contacts)
+
+Enter a company and its people in one go. The JSON nests contacts under their account; the tool saves the account first, then opens each contact's form with the account already filled in.
+
+- [x] 21. Choose the parent–child example: Account → Contacts (standard objects, no setup)
+- [x] 22. Add `children` to the JSON format, in the extension and the Python tool
+- [x] 23. Create the sample file `examples/accounts-contacts.json` (2 accounts, 5 contacts)
+- [ ] 24. Run it with the Python tool against Salesforce and check each contact is linked to its account
+- [ ] 25. Run it with the extension in regular Chrome
+
 ## Later
 
 - [ ] 11. Choose the second system to support after Salesforce

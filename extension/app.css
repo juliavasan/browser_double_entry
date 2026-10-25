@@ -42,4 +42,6 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); v
 th { color: var(--muted); font-weight: 600; font-size: 13px; }
 td.ok { color: var(--ok); }
 td.fail { color: var(--fail); }
+td.skip { color: var(--muted); }
+tr.child td:nth-child(2) { padding-left: 24px; }
 a { color: var(--accent); }

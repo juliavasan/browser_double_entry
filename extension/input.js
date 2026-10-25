@@ -1,6 +1,7 @@
 export class InputError extends Error {}
 
-// Same rules as the Python tool's input.py.
+// Same rules as the Python tool's input.py. A record may have "children":
+// records of another object that are linked to it. They use the parent's system.
 export function parseRecords(text) {
   let data;
   try {
@@ -9,24 +10,35 @@ export function parseRecords(text) {
     throw new InputError(`invalid JSON: ${e.message}`);
   }
 
-  const raw = data && typeof data === "object" && !Array.isArray(data) ? data.records : undefined;
+  const raw = isObject(data) ? data.records : undefined;
   if (!Array.isArray(raw)) {
     throw new InputError("expected an object with a 'records' list");
   }
+  return raw.map((item, i) => parseRecord(item, `records[${i}]`, null));
+}
 
-  return raw.map((item, i) => {
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      throw new InputError(`records[${i}]: expected an object`);
+function parseRecord(item, path, system) {
+  if (!isObject(item)) throw new InputError(`${path}: expected an object`);
+  const keys = system ? ["object"] : ["system", "object"];
+  for (const key of keys) {
+    if (typeof item[key] !== "string" || !item[key]) {
+      throw new InputError(`${path}: missing '${key}'`);
     }
-    for (const key of ["system", "object"]) {
-      if (typeof item[key] !== "string" || !item[key]) {
-        throw new InputError(`records[${i}]: missing '${key}'`);
-      }
-    }
-    const fields = item.fields ?? {};
-    if (typeof fields !== "object" || Array.isArray(fields) || fields === null) {
-      throw new InputError(`records[${i}]: 'fields' must be an object`);
-    }
-    return { system: item.system, object: item.object, fields };
-  });
+  }
+  const fields = item.fields ?? {};
+  if (!isObject(fields)) throw new InputError(`${path}: 'fields' must be an object`);
+  const children = item.children ?? [];
+  if (!Array.isArray(children)) throw new InputError(`${path}: 'children' must be a list`);
+
+  const sys = system ?? item.system;
+  return {
+    system: sys,
+    object: item.object,
+    fields,
+    children: children.map((c, j) => parseRecord(c, `${path}.children[${j}]`, sys)),
+  };
+}
+
+function isObject(v) {
+  return v !== null && typeof v === "object" && !Array.isArray(v);
 }

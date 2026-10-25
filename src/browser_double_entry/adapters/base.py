@@ -11,11 +11,22 @@ class Result:
     record: Record
     ok: bool
     message: str = ""
+    id: str | None = None
+    skipped: bool = False
+
+
+@dataclass
+class Parent:
+    object: str
+    id: str
 
 
 class Adapter(ABC):
     name: str
 
     @abstractmethod
-    def enter(self, page: Page, record: Record) -> Result:
-        """Enter one record into the target system using the given page."""
+    def enter(self, page: Page, record: Record, parent: Parent | None = None) -> Result:
+        """Enter one record into the target system using the given page.
+
+        parent is the already saved record this one should be linked to.
+        """
