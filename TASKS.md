@@ -7,7 +7,7 @@ Python command that drove Chrome over CDP. Entered 3 test contacts into Salesfor
 - [x] 1. Log in to GitHub from the terminal
 - [x] 2. Create the public repo
 - [x] 3. Confirm the tool drives the browser over CDP (not the Salesforce API)
-- [x] 4. Confirm `juliavasan` is the right GitHub account
+- [x] 4. Confirm the GitHub account
 - [x] 5. Pick the email for commits
 - [x] 6. Get a Salesforce org to test in (Developer Edition)
 - [x] 7. Pick the first object and fields: Contact with FirstName, LastName, Email, Phone, Title (`examples/contacts.json`)
@@ -51,7 +51,7 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 31. Replace the Python tests with Node tests (`npm test`), including a check that every adapter is complete
 - [x] 32. Rename the GitHub repo to `bulk-entry-extension`
 - [x] 33. Reload the extension and run `examples/accounts-contacts.json` with the cleaned-up code
-- [ ] 34. Add a license (e.g. MIT)
+- [x] 34. Add a license (MIT)
 
 ## Later
 

@@ -94,4 +94,4 @@ docs/architecture.md     how it works
 
 ## License
 
-Add a license before others reuse this. MIT is a common choice for examples.
+[MIT](LICENSE). Copy it, change it, use it in your company.
