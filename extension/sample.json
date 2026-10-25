@@ -1,0 +1,80 @@
+{
+  "records": [
+    {
+      "system": "salesforce",
+      "object": "Account",
+      "fields": {
+        "Name": "Northwind Logistics",
+        "AccountNumber": "CUST-1001",
+        "Site": "Chicago, IL",
+        "Phone": "+1 312 555 0100",
+        "Website": "https://northwind.example.com"
+      },
+      "children": [
+        {
+          "object": "Contact",
+          "fields": {
+            "FirstName": "Maria",
+            "LastName": "Gonzalez",
+            "Email": "maria.gonzalez@northwind.example.com",
+            "Phone": "+1 312 555 0101",
+            "Title": "Operations Director"
+          }
+        },
+        {
+          "object": "Contact",
+          "fields": {
+            "FirstName": "James",
+            "LastName": "Okafor",
+            "Email": "james.okafor@northwind.example.com",
+            "Phone": "+1 312 555 0102",
+            "Title": "Facilities Manager"
+          }
+        },
+        {
+          "object": "Contact",
+          "fields": {
+            "FirstName": "Priya",
+            "LastName": "Natarajan",
+            "Email": "priya.natarajan@northwind.example.com",
+            "Phone": "+1 312 555 0103",
+            "Title": "Procurement Lead"
+          }
+        }
+      ]
+    },
+    {
+      "system": "salesforce",
+      "object": "Account",
+      "fields": {
+        "Name": "Bluebird Clinics",
+        "AccountNumber": "CUST-1002",
+        "Site": "Denver, CO",
+        "Phone": "+1 303 555 0100",
+        "Website": "https://bluebird.example.com"
+      },
+      "children": [
+        {
+          "object": "Contact",
+          "fields": {
+            "FirstName": "Daniel",
+            "LastName": "Kim",
+            "Email": "daniel.kim@bluebird.example.com",
+            "Phone": "+1 303 555 0101",
+            "Title": "Practice Manager"
+          }
+        },
+        {
+          "object": "Contact",
+          "fields": {
+            "FirstName": "Sofia",
+            "LastName": "Rossi",
+            "Email": "sofia.rossi@bluebird.example.com",
+            "Phone": "+1 303 555 0102",
+            "Title": "Chief Medical Officer"
+          }
+        }
+      ]
+    }
+  ]
+}

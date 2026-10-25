@@ -1,10 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Bulk Entry",
+  "name": "Bulk Entry for Salesforce",
   "version": "0.1.0",
-  "description": "Example: enter many records from a JSON file into a web app's forms, using your normal browser session.",
+  "description": "Create Salesforce Accounts and their Contacts in bulk from a JSON file, using your own logged-in session.",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "action": {
-    "default_title": "Bulk Entry"
+    "default_title": "Bulk Entry for Salesforce",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
   },
   "background": {
     "service_worker": "background.js"

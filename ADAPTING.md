@@ -19,8 +19,9 @@ about 40 lines.
 | 2 | `extension/adapters/index.js` | Import your adapter and add it to `ADAPTERS` |
 | 3 | `extension/manifest.json` | Put your system's address in `host_permissions`, matching the adapter's `urls` |
 | 4 | Your JSON file | Use your adapter's `name` as `system`, and your objects and fields |
-| 5 | `extension/app.js`, `recordName()` | Optional: which fields name a record in the results table |
-| 6 | `extension/manifest.json`, `app.html` | Optional: your own name and description |
+| 5 | `extension/app.html`, `manifest.json` | The page text, name and description are written for Salesforce Accounts and Contacts: change them to describe your system and objects |
+| 6 | `extension/sample.json`, `icons/` | Replace the downloadable sample file with one for your objects, and optionally the icon |
+| 7 | `extension/app.js`, `recordName()` and `recordDetails()` | Optional: which fields name and describe a record in the review table |
 
 Only adding objects or fields to a system that already has an adapter, such as
 more Salesforce objects? Usually only step 4 changes. Fields whose form input is

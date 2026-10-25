@@ -53,6 +53,12 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 33. Reload the extension and run `examples/accounts-contacts.json` with the cleaned-up code
 - [x] 34. Add a license (MIT)
 
+## Phase 5: Professional interface
+
+- [x] 35. Redesign the page for Salesforce Account + Contact bulk entry: connection status, drag-and-drop file, review table, live progress, results summary, light and dark mode
+- [x] 36. Add a toolbar icon and a downloadable sample file
+- [ ] 37. Reload the extension and run `examples/accounts-contacts.json` with the new interface
+
 ## Later
 
 - [ ] 11. Add a second example adapter, to show adapting to a different app

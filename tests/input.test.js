@@ -38,3 +38,8 @@ test("rejects bad input with the path to the problem", () => {
   ];
   for (const [text, message] of cases) assert.throws(() => parseRecords(text), message);
 });
+
+test("the extension's downloadable sample matches examples/accounts-contacts.json", () => {
+  const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
+  assert.equal(read("../extension/sample.json"), read("../examples/accounts-contacts.json"));
+});

@@ -8,7 +8,7 @@ adapter (Accounts, Contacts, and Contacts linked to their Account), and
 [ADAPTING.md](ADAPTING.md) shows how to point it at your own system and objects.
 
 ```
-records.json  →  Bulk Entry (extension)  →  your app's "New" form, once per record  →  results table
+records.json  →  Bulk Entry for Salesforce (extension)  →  your app's "New" form, once per record  →  results table
 ```
 
 ## Why an extension
@@ -31,9 +31,10 @@ extra code. See [Limitations](#limitations).
    [developer.salesforce.com/signup](https://developer.salesforce.com/signup), and log in to it in Chrome.
 2. Open `chrome://extensions`, turn on **Developer mode** (top right), click
    **Load unpacked** and choose the `extension` folder.
-3. Click the **Bulk Entry** icon in the toolbar (it may be under the puzzle-piece menu).
-   A page opens in a new tab.
-4. Choose [`examples/accounts-contacts.json`](examples/accounts-contacts.json) and click **Start**.
+3. Click the **Bulk Entry for Salesforce** icon in the toolbar (it may be under the
+   puzzle-piece menu). A page opens in a new tab and shows which org it's connected to.
+4. Drop [`examples/accounts-contacts.json`](examples/accounts-contacts.json) on the page (or use
+   **Download a sample file**), review the records, and click **Create 7 records in Salesforce**.
 
 The extension saves each Account, then opens each of its Contacts' forms with the
 Account already filled in. Each record's result appears in the table, with a link
@@ -72,7 +73,10 @@ extension's card in `chrome://extensions`.
 extension/
   manifest.json          name, permissions (your app's domain goes here)
   background.js          toolbar icon opens the app page
-  app.html, app.js       page to pick a file, run, and show results
+  app.html, app.css      the page: pick a file, review, run, results
+  app.js                 page logic: connection check, review table, run
+  sample.json            sample file users can download from the page
+  icons/                 toolbar and page icons
   lib/input.js           reads and checks the JSON
   lib/engine.js          enters one record: open form, fill, save, confirm
   lib/page.js            generic tab helpers and the in-page form filler

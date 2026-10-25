@@ -2,36 +2,135 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Bulk Entry</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bulk Entry for Salesforce</title>
+  <link rel="icon" href="icons/icon-32.png">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/icon-48.png" alt="" width="28" height="28">
+      <span class="brand-name">Bulk Entry</span>
+      <span class="brand-for">for Salesforce</span>
+    </div>
+    <div class="connection" id="connection" data-state="checking">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="connection-text">Checking for Salesforce…</span>
+      <button class="link-button" id="recheck" type="button" hidden>Check again</button>
+    </div>
+  </header>
+
   <main>
-    <h1>Bulk Entry</h1>
-    <p class="lead">Enter records from a JSON file into a web app's forms, using the session you're already logged in with.</p>
+    <section class="intro">
+      <h1>Create Accounts and their Contacts in bulk</h1>
+      <p>
+        Load one file of Accounts and Contacts, and Bulk Entry fills in and saves Salesforce's
+        own New Account and New Contact forms for you, one record at a time. It works in the
+        Salesforce session you're already logged in to, and links each Contact to its Account
+        automatically.
+      </p>
+      <ol class="steps">
+        <li><span class="step-num">1</span><div><strong>Choose a file</strong><span>Accounts, each with its Contacts, in JSON</span></div></li>
+        <li><span class="step-num">2</span><div><strong>Review</strong><span>Check every record before anything is saved</span></div></li>
+        <li><span class="step-num">3</span><div><strong>Create</strong><span>Watch each record being saved, then check the results</span></div></li>
+      </ol>
+    </section>
 
-    <section>
-      <label class="file">
-        <span>1. Choose a JSON file</span>
+    <section class="card" id="file-card">
+      <div class="card-head">
+        <h2><span class="step-num small">1</span>Choose a file</h2>
+        <a class="link" href="sample.json" download="accounts-contacts-sample.json">Download a sample file</a>
+      </div>
+
+      <label class="dropzone" id="dropzone">
         <input type="file" id="file" accept=".json,application/json">
+        <svg class="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="dropzone-main">Drop a JSON file here, or <u>browse</u></span>
+        <span class="dropzone-sub">Accounts with their Contacts, in the format below</span>
       </label>
-      <p id="summary" class="note"></p>
+
+      <div class="file-chip" id="file-chip" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a1 1 0 00-1 1v16a1 1 0 001 1h10a1 1 0 001-1V7l-4-4zm0 0v4h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <span id="file-name"></span>
+        <span class="muted" id="file-size"></span>
+        <button class="link-button" id="clear-file" type="button">Remove</button>
+      </div>
+
+      <p class="message error" id="file-error" hidden></p>
+
+      <details class="format">
+        <summary>File format</summary>
+        <p>A list of Accounts. Each Account can have <code>children</code>: its Contacts. Field names are Salesforce API names, as shown in Setup → Object Manager → Fields &amp; Relationships.</p>
+        <pre><code>{
+  "records": [
+    {
+      "system": "salesforce",
+      "object": "Account",
+      "fields": { "Name": "Northwind Logistics", "Phone": "+1 312 555 0100" },
+      "children": [
+        { "object": "Contact",
+          "fields": { "FirstName": "Maria", "LastName": "Gonzalez", "Email": "maria@northwind.example.com" } }
+      ]
+    }
+  ]
+}</code></pre>
+        <p class="muted">Supported now: text fields such as Name, AccountNumber, Site, Phone, Website on Accounts, and FirstName, LastName, Email, Phone, Title on Contacts.</p>
+      </details>
     </section>
 
-    <section>
-      <button id="start" disabled>2. Start</button>
-      <p id="status" class="note"></p>
+    <section class="card" id="review-card" hidden>
+      <div class="card-head">
+        <h2><span class="step-num small">2</span>Review</h2>
+        <div class="counts" id="counts"></div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="records">
+          <thead>
+            <tr><th class="num">#</th><th>Record</th><th>Type</th><th>Details</th><th>Status</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
 
-    <table id="results" hidden>
-      <thead>
-        <tr><th>#</th><th>Record</th><th>System</th><th>Result</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <section class="card run" id="run-card" hidden>
+      <div class="card-head">
+        <h2><span class="step-num small">3</span>Create in Salesforce</h2>
+      </div>
 
-    <button id="download" class="secondary" hidden>Save results as a file</button>
+      <div id="run-ready">
+        <p class="muted">A Salesforce tab opens and you can watch each form being filled in. Keep this tab open until the run finishes.</p>
+        <button class="primary" id="start" type="button" disabled>Create records</button>
+      </div>
+
+      <div id="run-progress" hidden>
+        <div class="progress-label"><span id="progress-text"></span><span class="muted" id="progress-count"></span></div>
+        <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+
+      <div id="run-done" hidden>
+        <div class="tiles">
+          <div class="tile ok"><span class="tile-num" id="sum-saved">0</span><span>Saved</span></div>
+          <div class="tile fail"><span class="tile-num" id="sum-failed">0</span><span>Failed</span></div>
+          <div class="tile skip"><span class="tile-num" id="sum-skipped">0</span><span>Skipped</span></div>
+        </div>
+        <div class="actions">
+          <button class="secondary" id="download" type="button">Download results</button>
+          <button class="link-button" id="again" type="button">Start over with another file</button>
+        </div>
+      </div>
+
+      <p class="message error" id="run-error" hidden></p>
+    </section>
   </main>
+
+  <footer>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.3-7 10-4-1.7-7-5.5-7-10V6l7-3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+    Runs entirely in your browser. Bulk Entry can only access your Salesforce domain, uses your existing login, and sends your data nowhere else.
+  </footer>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>
