@@ -9,5 +9,5 @@
 7. [x] Pick the first object and fields: Contact with FirstName, LastName, Email, Phone, Title (`examples/contacts.json`)
 8. [x] Start Chrome with remote debugging (command in README) and log in to the test org in that window
 9. [x] Run the dry run: `.venv/bin/bde examples/contacts.json --dry-run`
-10. [ ] Run it for real, `.venv/bin/bde examples/contacts.json`, and share the report
+10. [x] Run it for real, `.venv/bin/bde examples/contacts.json`, and share the report
 11. [ ] Choose the second system to support after Salesforce

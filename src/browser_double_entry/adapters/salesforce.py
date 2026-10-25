@@ -3,6 +3,16 @@ from playwright.sync_api import Page
 from browser_double_entry.adapters.base import Adapter, Result
 from browser_double_entry.input import Record
 
+# Lightning names the inputs of compound fields (Name, addresses) differently
+# from their API names. Other fields use the API name as the input name.
+INPUT_NAMES = {
+    "Salutation": "salutation",
+    "FirstName": "firstName",
+    "MiddleName": "middleName",
+    "LastName": "lastName",
+    "Suffix": "suffix",
+}
+
 
 class SalesforceAdapter(Adapter):
     """Creates records through the Lightning UI of a Salesforce org.
@@ -22,15 +32,18 @@ class SalesforceAdapter(Adapter):
         if not base:
             return Result(record, ok=False, message="no Salesforce tab open; log in first or pass --salesforce-url")
 
-        page.goto(f"{base}/lightning/o/{record.object}/new")
-        page.wait_for_load_state("networkidle")
+        # Lightning keeps connections open, so wait for the form, not for the network.
+        page.goto(f"{base}/lightning/o/{record.object}/new", wait_until="domcontentloaded")
+        save = page.get_by_role("button", name="Save", exact=True)
+        save.wait_for(timeout=30_000)
 
-        # TODO: Lightning field labels differ from API names and per org.
-        # Map record.fields to the right inputs and fill them, then save.
         for api_name, value in record.fields.items():
-            page.locator(f'[name="{api_name}"]').first.fill(str(value))
+            field = page.locator(f'[name="{INPUT_NAMES.get(api_name, api_name)}"]')
+            if field.count() == 0:
+                return Result(record, ok=False, message=f"no input for field {api_name}")
+            field.first.fill(str(value))
 
-        page.get_by_role("button", name="Save", exact=True).click()
+        save.click()
         page.wait_for_url("**/view", timeout=15_000)
         return Result(record, ok=True, message=page.url)
 
