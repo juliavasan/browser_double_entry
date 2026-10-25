@@ -1,14 +1,15 @@
 # bulk-entry-extension
 
 An example browser extension that enters many records into a web app from one
-JSON file, by filling in and saving the app's own forms the way a person would.
+spreadsheet (Excel or CSV) or JSON file, by filling in and saving the app's own
+forms the way a person would.
 
 It's meant to be copied and adapted. It comes with a working **Salesforce**
 adapter (Accounts, Contacts, and Contacts linked to their Account), and
 [ADAPTING.md](ADAPTING.md) shows how to point it at your own system and objects.
 
 ```
-records.json  →  Bulk Entry for Salesforce (extension)  →  your app's "New" form, once per record  →  results table
+spreadsheet  →  Bulk Entry for Salesforce (extension)  →  your app's "New" form, once per record  →  results table
 ```
 
 ## Why an extension
@@ -33,8 +34,8 @@ extra code. See [Limitations](#limitations).
    **Load unpacked** and choose the `extension` folder.
 3. Click the **Bulk Entry for Salesforce** icon in the toolbar (it may be under the
    puzzle-piece menu). A page opens in a new tab and shows which org it's connected to.
-4. Drop [`examples/accounts-contacts.json`](examples/accounts-contacts.json) on the page (or use
-   **Download a sample file**), review the records, and click **Create 7 records in Salesforce**.
+4. Drop [`examples/accounts-contacts.xlsx`](examples/accounts-contacts.xlsx) on the page (or use
+   **Download a sample**), review the records, and click **Create 7 records in Salesforce**.
 
 The extension saves each Account, then opens each of its Contacts' forms with the
 Account already filled in. Each record's result appears in the table, with a link
@@ -44,6 +45,25 @@ After you change any file in `extension/`, click the reload icon on the
 extension's card in `chrome://extensions`.
 
 ## Input format
+
+### Spreadsheet (Excel or CSV)
+
+One row per Contact. Account columns come first, then Contact columns. Leave the
+Account cells empty to add more Contacts to the Account above. Column names are
+`Object.Field`, with Salesforce field names. Only the first sheet is read.
+
+| Account.Name | Account.Phone | Contact.FirstName | Contact.LastName |
+| --- | --- | --- | --- |
+| Northwind Logistics | +1 312 555 0100 | Maria | Gonzalez |
+| | | James | Okafor |
+| Bluebird Clinics | +1 303 555 0100 | Daniel | Kim |
+
+Examples: [`accounts-contacts.xlsx`](examples/accounts-contacts.xlsx),
+[`accounts-contacts.csv`](examples/accounts-contacts.csv). The first object in
+the columns is the parent and the second is the child, so the same layout works
+for other objects.
+
+### JSON
 
 ```json
 {
@@ -75,9 +95,12 @@ extension/
   background.js          toolbar icon opens the app page
   app.html, app.css      the page: pick a file, review, run, results
   app.js                 page logic: connection check, review table, run
-  sample.json            sample file users can download from the page
+  sample.*               sample files users can download from the page
   icons/                 toolbar and page icons
-  lib/input.js           reads and checks the JSON
+  lib/input.js           reads and checks JSON
+  lib/table.js           reads spreadsheet rows (and CSV) into the same records
+  lib/files.js           picks the reader by file type
+  vendor/                SheetJS, for reading Excel files (Apache 2.0)
   lib/engine.js          enters one record: open form, fill, save, confirm
   lib/page.js            generic tab helpers and the in-page form filler
   adapters/index.js      list of systems

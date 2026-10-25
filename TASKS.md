@@ -59,6 +59,14 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 36. Add a toolbar icon and a downloadable sample file
 - [ ] 37. Reload the extension and run `examples/accounts-contacts.json` with the new interface
 
+## Phase 6: Excel and CSV files
+
+- [x] 38. Spreadsheet format: `Object.Field` columns, one row per Contact, empty Account cells continue the Account above
+- [x] 39. Read CSV (own parser) and Excel (bundled SheetJS, no network)
+- [x] 40. Add `examples/accounts-contacts.xlsx` and `.csv`, downloadable from the page
+- [x] 41. Simplify the page around spreadsheets: example table and three rules; JSON as an option
+- [ ] 42. Reload the extension and run `examples/accounts-contacts.xlsx`
+
 ## Later
 
 - [ ] 11. Add a second example adapter, to show adapting to a different app

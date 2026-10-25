@@ -1,6 +1,7 @@
 import { ADAPTERS } from "./adapters/index.js";
 import { enterRecord, findBaseUrl } from "./lib/engine.js";
-import { InputError, parseRecords, walk } from "./lib/input.js";
+import { readRecordsFromFile } from "./lib/files.js";
+import { InputError, walk } from "./lib/input.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -95,7 +96,8 @@ async function loadFile(file) {
   ui.fileSize.textContent = formatSize(file.size);
 
   try {
-    records = parseRecords(await file.text());
+    // Spreadsheets have no "system" column: their rows go to Salesforce.
+    records = await readRecordsFromFile(file, "salesforce");
     const unknown = [...new Set([...walk(records)].map((r) => r.system))].filter((s) => !ADAPTERS[s]);
     if (unknown.length) throw new InputError(`this extension can't enter records for: ${unknown.join(", ")}`);
     if (records.length === 0) throw new InputError("the file has no records");
@@ -106,6 +108,7 @@ async function loadFile(file) {
   }
 
   renderReview();
+  $("howto").hidden = true;
   ui.reviewCard.hidden = false;
   ui.runCard.hidden = false;
   await checkConnection();
@@ -120,6 +123,7 @@ function reset() {
   ui.dropzone.hidden = false;
   ui.fileChip.hidden = true;
   ui.fileError.hidden = true;
+  $("howto").hidden = false;
   ui.reviewCard.hidden = true;
   ui.runCard.hidden = true;
   ui.runReady.hidden = false;

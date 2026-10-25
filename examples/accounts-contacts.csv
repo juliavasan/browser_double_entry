@@ -1,0 +1,6 @@
+Account.Name,Account.AccountNumber,Account.Site,Account.Phone,Account.Website,Contact.FirstName,Contact.LastName,Contact.Email,Contact.Phone,Contact.Title
+Northwind Logistics,CUST-1001,"Chicago, IL",+1 312 555 0100,https://northwind.example.com,Maria,Gonzalez,maria.gonzalez@northwind.example.com,+1 312 555 0101,Operations Director
+,,,,,James,Okafor,james.okafor@northwind.example.com,+1 312 555 0102,Facilities Manager
+,,,,,Priya,Natarajan,priya.natarajan@northwind.example.com,+1 312 555 0103,Procurement Lead
+Bluebird Clinics,CUST-1002,"Denver, CO",+1 303 555 0100,https://bluebird.example.com,Daniel,Kim,daniel.kim@bluebird.example.com,+1 303 555 0101,Practice Manager
+,,,,,Sofia,Rossi,sofia.rossi@bluebird.example.com,+1 303 555 0102,Chief Medical Officer

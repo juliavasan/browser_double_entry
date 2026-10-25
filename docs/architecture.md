@@ -10,12 +10,13 @@ browser session.
 ## Flow
 
 ```
-records.json → app page (app.js) → engine (lib/engine.js) → work tab: "New" form → saved record
+spreadsheet or JSON → app page (app.js) → engine (lib/engine.js) → work tab: "New" form → saved record
                                          ↑ adapter (adapters/<system>.js) says where and how
 ```
 
-1. **Pick a file.** `lib/input.js` reads the JSON and checks every record,
-   children included. The page shows how many records of each object are ready.
+1. **Pick a file.** `lib/files.js` picks the reader by file type: `lib/table.js`
+   turns an Excel or CSV sheet into records, and `lib/input.js` reads JSON.
+   Every record is checked, children included. The page shows how many records of each object are ready.
 2. **Find the system.** For each system in the file, the engine finds a tab the
    user already has open and logged in, and takes the system's address from it.
 3. **Enter each record.** In one work tab, for each record:
@@ -38,6 +39,8 @@ records.json → app page (app.js) → engine (lib/engine.js) → work tab: "New
 | `background.js` | Toolbar icon opens the app page in a tab |
 | `app.html`, `app.js` | File picker, run, results table, download |
 | `lib/input.js` | JSON reading and validation, `walk()` over records and children |
+| `lib/table.js` | Spreadsheet rows (`Object.Field` columns, one row per child) into records; CSV parser |
+| `lib/files.js` | Chooses the reader by file extension; reads Excel with SheetJS (`vendor/`) |
 | `lib/engine.js` | `findBaseUrl()` and `enterRecord()`: one record, start to finish |
 | `lib/page.js` | Tab helpers (`navigate`, `waitForTabUrl`, `runInPage`) and in-page functions (`fillForm`, `readErrors`) |
 | `adapters/*.js` | One object per system: addresses, selectors, success check |

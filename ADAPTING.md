@@ -18,9 +18,10 @@ about 40 lines.
 | 1 | `extension/adapters/<your-system>.js` | Copy `template.js` and fill in each `TODO` (details below) |
 | 2 | `extension/adapters/index.js` | Import your adapter and add it to `ADAPTERS` |
 | 3 | `extension/manifest.json` | Put your system's address in `host_permissions`, matching the adapter's `urls` |
-| 4 | Your JSON file | Use your adapter's `name` as `system`, and your objects and fields |
+| 4 | Your spreadsheet or JSON file | Your objects and fields. Spreadsheet columns are `Object.Field`; JSON uses your adapter's `name` as `system` |
+| 4b | `extension/app.js`, `readRecordsFromFile(file, "salesforce")` | Spreadsheets have no system column: change `"salesforce"` to your adapter's `name` |
 | 5 | `extension/app.html`, `manifest.json` | The page text, name and description are written for Salesforce Accounts and Contacts: change them to describe your system and objects |
-| 6 | `extension/sample.json`, `icons/` | Replace the downloadable sample file with one for your objects, and optionally the icon |
+| 6 | `extension/sample.*`, `icons/` | Replace the downloadable sample files with ones for your objects, and optionally the icon |
 | 7 | `extension/app.js`, `recordName()` and `recordDetails()` | Optional: which fields name and describe a record in the review table |
 
 Only adding objects or fields to a system that already has an adapter, such as

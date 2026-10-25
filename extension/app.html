@@ -25,13 +25,13 @@
     <section class="intro">
       <h1>Create Accounts and their Contacts in bulk</h1>
       <p>
-        Load one file of Accounts and Contacts, and Bulk Entry fills in and saves Salesforce's
-        own New Account and New Contact forms for you, one record at a time. It works in the
-        Salesforce session you're already logged in to, and links each Contact to its Account
-        automatically.
+        List your Accounts and their Contacts in a spreadsheet, and Bulk Entry fills in and saves
+        Salesforce's own New Account and New Contact forms for you, one record at a time. It works
+        in the Salesforce session you're already logged in to, and links each Contact to its
+        Account automatically.
       </p>
       <ol class="steps">
-        <li><span class="step-num">1</span><div><strong>Choose a file</strong><span>Accounts, each with its Contacts, in JSON</span></div></li>
+        <li><span class="step-num">1</span><div><strong>Choose a file</strong><span>An Excel or CSV sheet of Accounts and their Contacts</span></div></li>
         <li><span class="step-num">2</span><div><strong>Review</strong><span>Check every record before anything is saved</span></div></li>
         <li><span class="step-num">3</span><div><strong>Create</strong><span>Watch each record being saved, then check the results</span></div></li>
       </ol>
@@ -40,14 +40,18 @@
     <section class="card" id="file-card">
       <div class="card-head">
         <h2><span class="step-num small">1</span>Choose a file</h2>
-        <a class="link" href="sample.json" download="accounts-contacts-sample.json">Download a sample file</a>
+        <span class="samples">Download a sample:
+          <a class="link" href="sample.xlsx" download="accounts-contacts-sample.xlsx">Excel</a>
+          <a class="link" href="sample.csv" download="accounts-contacts-sample.csv">CSV</a>
+          <a class="link" href="sample.json" download="accounts-contacts-sample.json">JSON</a>
+        </span>
       </div>
 
       <label class="dropzone" id="dropzone">
-        <input type="file" id="file" accept=".json,application/json">
+        <input type="file" id="file" accept=".xlsx,.xls,.csv,.json">
         <svg class="dropzone-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="dropzone-main">Drop a JSON file here, or <u>browse</u></span>
-        <span class="dropzone-sub">Accounts with their Contacts, in the format below</span>
+        <span class="dropzone-main">Drop your spreadsheet here, or <u>browse</u></span>
+        <span class="dropzone-sub">Excel (.xlsx), CSV or JSON</span>
       </label>
 
       <div class="file-chip" id="file-chip" hidden>
@@ -59,24 +63,48 @@
 
       <p class="message error" id="file-error" hidden></p>
 
-      <details class="format">
-        <summary>File format</summary>
-        <p>A list of Accounts. Each Account can have <code>children</code>: its Contacts. Field names are Salesforce API names, as shown in Setup → Object Manager → Fields &amp; Relationships.</p>
-        <pre><code>{
+      <div class="howto" id="howto">
+        <h3>How to set up your spreadsheet</h3>
+        <div class="sheet-wrap">
+          <table class="sheet">
+            <thead>
+              <tr><th>Account.Name</th><th>Account.Phone</th><th>Contact.FirstName</th><th>Contact.LastName</th><th>Contact.Email</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Northwind Logistics</td><td>+1 312 555 0100</td><td>Maria</td><td>Gonzalez</td><td>maria@northwind.example.com</td></tr>
+              <tr><td class="empty"></td><td class="empty"></td><td>James</td><td>Okafor</td><td>james@northwind.example.com</td></tr>
+              <tr><td>Bluebird Clinics</td><td>+1 303 555 0100</td><td>Daniel</td><td>Kim</td><td>daniel@bluebird.example.com</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="rules">
+          <li><strong>One row per Contact.</strong> Account columns come first, then Contact columns.</li>
+          <li><strong>Leave the Account cells empty</strong> to add more Contacts to the Account above.</li>
+          <li><strong>Column names</strong> are the object and the Salesforce field name: <code>Account.Name</code>, <code>Contact.Email</code>.</li>
+        </ul>
+        <details class="format">
+          <summary>Which fields can I use?</summary>
+          <p><strong>Account:</strong> <code>Name</code> (required), <code>AccountNumber</code>, <code>Site</code>, <code>Phone</code>, <code>Website</code><br>
+          <strong>Contact:</strong> <code>LastName</code> (required), <code>FirstName</code>, <code>Email</code>, <code>Phone</code>, <code>Title</code></p>
+          <p class="muted">Other text fields usually work too: use the field name from Setup → Object Manager → Fields &amp; Relationships. Dropdown, lookup and date fields aren't supported yet.</p>
+        </details>
+        <details class="format">
+          <summary>Using JSON instead?</summary>
+          <p>Each Account lists its Contacts under <code>children</code>:</p>
+          <pre><code>{
   "records": [
     {
       "system": "salesforce",
       "object": "Account",
       "fields": { "Name": "Northwind Logistics", "Phone": "+1 312 555 0100" },
       "children": [
-        { "object": "Contact",
-          "fields": { "FirstName": "Maria", "LastName": "Gonzalez", "Email": "maria@northwind.example.com" } }
+        { "object": "Contact", "fields": { "FirstName": "Maria", "LastName": "Gonzalez" } }
       ]
     }
   ]
 }</code></pre>
-        <p class="muted">Supported now: text fields such as Name, AccountNumber, Site, Phone, Website on Accounts, and FirstName, LastName, Email, Phone, Title on Contacts.</p>
-      </details>
+        </details>
+      </div>
     </section>
 
     <section class="card" id="review-card" hidden>
@@ -131,6 +159,7 @@
     Runs entirely in your browser. Bulk Entry can only access your Salesforce domain, uses your existing login, and sends your data nowhere else.
   </footer>
 
+  <script src="vendor/xlsx.mini.min.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>
