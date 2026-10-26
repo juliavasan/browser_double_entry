@@ -42,59 +42,7 @@
 
     <section class="card">
       <div class="card-head">
-        <h2><span class="step-num small">1</span>Prepare your file</h2>
-        <span class="samples">Download a sample:
-          <a class="link" href="sample.xlsx" download="accounts-contacts-sample.xlsx">Excel</a>
-          <a class="link" href="sample.csv" download="accounts-contacts-sample.csv">CSV</a>
-          <a class="link" href="sample.json" download="accounts-contacts-sample.json">JSON</a>
-        </span>
-      </div>
-
-      <div class="sheet-wrap">
-        <table class="sheet">
-          <thead>
-            <tr><th>Account.Name</th><th>Account.Phone</th><th>Contact.FirstName</th><th>Contact.LastName</th><th>Contact.Email</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Northwind Logistics</td><td>+1 312 555 0100</td><td>Maria</td><td>Gonzalez</td><td>maria@northwind.example.com</td></tr>
-            <tr><td class="empty"></td><td class="empty"></td><td>James</td><td>Okafor</td><td>james@northwind.example.com</td></tr>
-            <tr><td>Bluebird Clinics</td><td>+1 303 555 0100</td><td>Daniel</td><td>Kim</td><td>daniel@bluebird.example.com</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <ul class="rules">
-        <li><strong>One row per Contact.</strong> Account columns come first, then Contact columns.</li>
-        <li><strong>Leave the Account cells empty</strong> to add more Contacts to the Account above.</li>
-        <li><strong>Column names</strong> are the object and the Salesforce field name: <code>Account.Name</code>, <code>Contact.Email</code>.</li>
-        <li><strong>Check your data in the file.</strong> Everything in it is created as is.</li>
-      </ul>
-      <details class="format">
-        <summary>Which fields can I use?</summary>
-        <p><strong>Account:</strong> <code>Name</code> (required), <code>AccountNumber</code>, <code>Site</code>, <code>Phone</code>, <code>Website</code><br>
-        <strong>Contact:</strong> <code>LastName</code> (required), <code>FirstName</code>, <code>Email</code>, <code>Phone</code>, <code>Title</code></p>
-        <p class="muted">Other text fields usually work too: use the field name from Setup → Object Manager → Fields &amp; Relationships. Dropdown, lookup and date fields aren't supported yet.</p>
-      </details>
-      <details class="format">
-        <summary>Using JSON instead?</summary>
-        <p>Each Account lists its Contacts under <code>children</code>:</p>
-        <pre><code>{
-  "records": [
-    {
-      "system": "salesforce",
-      "object": "Account",
-      "fields": { "Name": "Northwind Logistics", "Phone": "+1 312 555 0100" },
-      "children": [
-        { "object": "Contact", "fields": { "FirstName": "Maria", "LastName": "Gonzalez" } }
-      ]
-    }
-  ]
-}</code></pre>
-      </details>
-    </section>
-
-    <section class="card">
-      <div class="card-head">
-        <h2><span class="step-num small">2</span>Upload it</h2>
+        <h2>Upload your file</h2>
       </div>
 
       <label class="dropzone" id="dropzone">
@@ -112,6 +60,29 @@
       </div>
 
       <p class="message error" id="file-error" hidden></p>
+
+      <div class="samples" id="samples">
+        <h3>Sample files</h3>
+        <p class="muted">Each has 2 Accounts with 5 Contacts. Start from one and replace the rows with your own.</p>
+        <div class="sample-list">
+          <a class="sample" href="sample.xlsx" download="accounts-contacts-sample.xlsx">
+            <span class="sample-badge xlsx">XLSX</span>
+            <span class="sample-text"><strong>Excel</strong><span>.xlsx file</span></span>
+            <span class="sample-get">Download</span>
+          </a>
+          <a class="sample" href="sample.csv" download="accounts-contacts-sample.csv">
+            <span class="sample-badge csv">CSV</span>
+            <span class="sample-text"><strong>CSV</strong><span>.csv file</span></span>
+            <span class="sample-get">Download</span>
+          </a>
+          <a class="sample" href="sample.json" download="accounts-contacts-sample.json">
+            <span class="sample-badge json">JSON</span>
+            <span class="sample-text"><strong>JSON</strong><span>.json file</span></span>
+            <span class="sample-get">Download</span>
+          </a>
+        </div>
+        <p class="muted hint">In a spreadsheet, put one Contact per row, Account columns first. Leave the Account cells empty to add more Contacts to the Account above.</p>
+      </div>
 
       <div id="records-section" hidden>
         <div class="section-head">
@@ -143,7 +114,7 @@
 
     <section class="card" id="results-card" hidden>
       <div class="card-head">
-        <h2><span class="step-num small">3</span>Check the results</h2>
+        <h2>Results</h2>
       </div>
       <div class="tiles">
         <div class="tile ok"><span class="tile-num" id="sum-saved">0</span><span>Saved</span></div>

@@ -90,6 +90,7 @@ async function loadFile(file) {
   if (!file) return;
   reset();
   ui.dropzone.hidden = true;
+  $("samples").hidden = true;
   ui.fileChip.hidden = false;
   ui.fileName.textContent = file.name;
   ui.fileSize.textContent = formatSize(file.size);
@@ -118,6 +119,7 @@ function reset() {
   rows = new Map();
   ui.file.value = "";
   ui.dropzone.hidden = false;
+  $("samples").hidden = false;
   ui.fileChip.hidden = true;
   ui.fileError.hidden = true;
   ui.recordsSection.hidden = true;
