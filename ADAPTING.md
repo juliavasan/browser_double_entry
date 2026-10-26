@@ -39,12 +39,12 @@ Then work out each property:
 | Property | Question to answer | How to find it |
 | --- | --- | --- |
 | `urls` | Which addresses are your system? | The address bar. Use a [match pattern](https://developer.chrome.com/docs/extensions/develop/concepts/match-patterns), e.g. `https://app.example.com/*` |
-| `baseUrl` | Which part of the address stays the same on every page? | The address bar, usually `https://` plus the domain |
+| `baseUrl` | Which part of the address stays the same on every page? | The address bar, usually `https://` plus the domain. Return `null` for the login page, so a tab that only shows the login page doesn't count as connected |
 | `newRecordUrl` | Which address opens an empty form for an object? | Open the form, copy the address. If the form only opens from a button (no address of its own), see [below](#forms-without-their-own-address) |
 | `inputSelector` | How do you find each field's input? | Right-click the field → **Inspect**. Look for a `name`, `id`, `aria-label` or `data-*` attribute that names the field |
 | `saveButtonText` | What does the save button say? | The text on the button, exactly, e.g. `Save` or `Create` |
 | `savedRecordId` | How do you know the save worked, and what's the new record's ID? | Save a record by hand and look at the address. It usually changes to the new record's page, with its ID in it |
-| `isLoggedIn` | What does the address look like when the session has expired? | Log out, open the form's address, see where it sends you |
+| `isLoggedIn` | Is this address a page you only see when logged in? | Log out, open the form's address, and see where it sends you. If a run lands on the login page, it pauses until this returns true again, then retries the same record |
 | `errorSelector` | Where do error messages appear? | Save a form with a required field empty, then Inspect the error |
 
 Test with one record before running a whole file. If something fails, the

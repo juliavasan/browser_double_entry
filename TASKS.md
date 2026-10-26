@@ -76,6 +76,14 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [ ] 49. Try the install steps on another computer or Chrome profile
 - [ ] 50. Optional: publish to the Chrome Web Store (one-time $5 fee) so users can install with one click
 
+## Phase 8: Handle Salesforce logins during a run
+
+- [x] 51. Fix: every record failed with "log in again", because a login or Setup page on `my.salesforce.com` counted as connected and the redirect to `lightning.force.com` looked like a logout
+- [x] 52. If Salesforce asks for a login mid-run, pause on the login page, show it on the page and the toolbar icon, and continue by itself after login
+- [x] 53. Add a Stop button to end a run; the rest are marked not created
+- [ ] 54. Run `bulk-entry-test.xlsx` (5 Accounts, 13 Contacts) for real
+- [ ] 55. Release v0.1.1 with the fix
+
 ## Later
 
 - [ ] 11. Add a second example adapter, to show adapting to a different app

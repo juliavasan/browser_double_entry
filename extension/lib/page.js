@@ -21,15 +21,42 @@ export function navigate(tabId, url) {
   });
 }
 
-// Resolves with the tab's URL once matches(url) is true, or null after timeout.
-export async function waitForTabUrl(tabId, matches, timeout) {
-  const end = Date.now() + timeout;
-  while (Date.now() < end) {
-    const tab = await chrome.tabs.get(tabId);
-    if (matches(tab.url ?? "")) return tab.url;
-    await new Promise((r) => setTimeout(r, 300));
-  }
-  return null;
+// Resolves with the tab's URL once matches(url) is true. Resolves null after
+// timeout (ms, or never if null) or when signal is aborted, and rejects if the
+// tab is closed. Listens for URL changes instead of polling, because Chrome
+// slows down timers in background tabs and runs can take a while.
+export function waitForTabUrl(tabId, matches, { timeout = null, signal } = {}) {
+  return new Promise((resolve, reject) => {
+    let finished = false;
+    let timer;
+    const finish = (settle, value) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
+      chrome.tabs.onRemoved.removeListener(onRemoved);
+      signal?.removeEventListener("abort", onAbort);
+      settle(value);
+    };
+    const onUpdated = (id, info, tab) => {
+      const url = tab?.url ?? info.url;
+      if (id === tabId && url && matches(url)) finish(resolve, url);
+    };
+    const onRemoved = (id) => {
+      if (id === tabId) finish(reject, new Error("the tab was closed"));
+    };
+    const onAbort = () => finish(resolve, null);
+
+    if (signal?.aborted) return resolve(null);
+    chrome.tabs.onUpdated.addListener(onUpdated);
+    chrome.tabs.onRemoved.addListener(onRemoved);
+    signal?.addEventListener("abort", onAbort);
+    if (timeout != null) timer = setTimeout(() => finish(resolve, null), timeout);
+    chrome.tabs.get(tabId).then(
+      (tab) => matches(tab.url ?? "") && finish(resolve, tab.url),
+      (err) => finish(reject, err),
+    );
+  });
 }
 
 // Runs func(...args) inside the page. Single-page apps can still redirect after

@@ -67,6 +67,7 @@ then delete the folder. You can turn **Developer mode** off again afterwards.
 | The extension disappeared, or shows an error after a restart | The folder was moved or deleted. Put it back, or load it again from its new place |
 | Chrome shows a "Disable developer mode extensions" message | That's Chrome's standard warning for extensions installed this way. Close it to keep using the extension |
 | The page says **Not connected to Salesforce** | Log in to Salesforce in this browser, then come back to the page or click **Check again** |
+| The run says **Paused: Salesforce needs you to log in again** | Your Salesforce session expired. Log in on the login page in the Salesforce tab: the run continues by itself from the same record. Or click **Stop** |
 | A row says **Failed** | The message next to it says why, for example a required field is empty. Fix that row in your file, and upload a file with just the rows that failed |
 
 ## Is it safe?

@@ -11,7 +11,7 @@ const INPUT_NAMES = {
   Suffix: "suffix",
 };
 
-const BASE_URL = /^(https:\/\/[^/]+\.(?:lightning\.force|my\.salesforce)\.com)\//;
+const SALESFORCE_HOST = /\.(?:lightning\.force|my\.salesforce)\.com$/;
 const RECORD_URL = /\/lightning\/r\/(?:\w+\/)?([a-zA-Z0-9]{15,18})\/view/;
 
 export default {
@@ -21,13 +21,20 @@ export default {
   // Must match host_permissions in manifest.json.
   urls: ["https://*.lightning.force.com/*", "https://*.my.salesforce.com/*"],
 
+  // Only a logged-in Lightning page counts, not a login or Setup page.
   baseUrl(tabUrl) {
-    return BASE_URL.exec(tabUrl)?.[1] ?? null;
+    return this.isLoggedIn(tabUrl) ? new URL(tabUrl).origin : null;
   },
 
-  // An expired session redirects to the login page on another domain.
-  isLoggedIn(tabUrl, base) {
-    return tabUrl.startsWith(base);
+  // Logged-in pages are under /lightning/. Without a session, Salesforce shows
+  // its login page instead, e.g. https://<org>.my.salesforce.com/?ec=302&startURL=...
+  isLoggedIn(tabUrl) {
+    try {
+      const url = new URL(tabUrl);
+      return SALESFORCE_HOST.test(url.hostname) && url.pathname.startsWith("/lightning/");
+    } catch {
+      return false;
+    }
   },
 
   // The parent's ID goes in the address, so the child's form opens with the

@@ -84,6 +84,29 @@
           <h3>Records to create</h3>
           <div class="counts" id="counts"></div>
         </div>
+        <div class="run" id="run-ready">
+          <button class="primary" id="start" type="button" disabled>Create records</button>
+          <span class="muted">A Salesforce tab opens so you can watch. Keep this tab open until it's done.</span>
+        </div>
+
+        <div class="run" id="run-progress" hidden>
+          <div class="progress-label">
+            <span id="progress-text"></span>
+            <span class="progress-right"><span class="muted" id="progress-count"></span><button class="link-button" id="stop" type="button">Stop</button></span>
+          </div>
+          <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
+        </div>
+
+        <div class="login-notice pause" id="login-pause" hidden>
+          <div>
+            <strong>Paused: <span id="login-pause-system">Salesforce</span> needs you to log in again</strong>
+            <span>Log in on the login page in the Salesforce tab. The run continues by itself from this record.</span>
+          </div>
+          <button class="primary" id="goto-work-tab" type="button">Go to the Salesforce tab</button>
+        </div>
+
+        <p class="message error" id="run-error" hidden></p>
+
         <div class="table-wrap">
           <table id="records">
             <thead>
@@ -93,17 +116,6 @@
           </table>
         </div>
 
-        <div class="run" id="run-ready">
-          <button class="primary" id="start" type="button" disabled>Create records</button>
-          <span class="muted">A Salesforce tab opens so you can watch. Keep this tab open until it's done.</span>
-        </div>
-
-        <div class="run" id="run-progress" hidden>
-          <div class="progress-label"><span id="progress-text"></span><span class="muted" id="progress-count"></span></div>
-          <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
-        </div>
-
-        <p class="message error" id="run-error" hidden></p>
       </div>
     </section>
 

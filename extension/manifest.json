@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bulk Entry for Salesforce",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Create Salesforce Accounts and their Contacts in bulk from a JSON file, using your own logged-in session.",
   "icons": {
     "16": "icons/icon-16.png",

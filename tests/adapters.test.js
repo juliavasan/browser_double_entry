@@ -34,14 +34,24 @@ test("registry keys match adapter names", () => {
 
 const ORG = "https://acme-dev-ed.develop.lightning.force.com";
 
-test("salesforce: finds the org from a tab", () => {
+const MY_DOMAIN = "https://acme-dev-ed.develop.my.salesforce.com";
+const LOGIN_PAGE = `${MY_DOMAIN}/?ec=302&startURL=%2Flightning%2Fo%2FAccount%2Fnew`;
+
+test("salesforce: finds the org only from a logged-in tab", () => {
   assert.equal(salesforce.baseUrl(`${ORG}/lightning/page/home`), ORG);
+  assert.equal(salesforce.baseUrl(`${MY_DOMAIN}/lightning/setup/SetupOneHome/home`), MY_DOMAIN);
+  assert.equal(salesforce.baseUrl(LOGIN_PAGE), null);
+  assert.equal(salesforce.baseUrl("https://login.salesforce.com/"), null);
   assert.equal(salesforce.baseUrl("https://www.linkedin.com/feed/"), null);
 });
 
-test("salesforce: detects the login redirect", () => {
-  assert.ok(salesforce.isLoggedIn(`${ORG}/lightning/o/Contact/new`, ORG));
-  assert.ok(!salesforce.isLoggedIn("https://acme-dev-ed.develop.my.salesforce.com/?ec=302", ORG));
+test("salesforce: tells logged-in pages from the login page", () => {
+  assert.ok(salesforce.isLoggedIn(`${ORG}/lightning/o/Contact/new`));
+  // A my.salesforce.com address redirects to lightning.force.com: still logged in.
+  assert.ok(salesforce.isLoggedIn(`${ORG}/lightning/r/Account/001aj00000ABCDEFGH/view`));
+  assert.ok(!salesforce.isLoggedIn(LOGIN_PAGE));
+  assert.ok(!salesforce.isLoggedIn("https://login.salesforce.com/"));
+  assert.ok(!salesforce.isLoggedIn("about:blank"));
 });
 
 test("salesforce: new record form links children to their parent", () => {

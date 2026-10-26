@@ -20,14 +20,15 @@ export default {
   urls: ["https://app.example.com/*"],
 
   // TODO: the part of a tab's URL that stays the same for every page, or null
-  // if this tab is not your system.
+  // if this tab is not a logged-in page of your system.
   baseUrl(tabUrl) {
-    return /^(https:\/\/app\.example\.com)\//.exec(tabUrl)?.[1] ?? null;
+    return this.isLoggedIn(tabUrl) ? new URL(tabUrl).origin : null;
   },
 
-  // TODO: false when the system sent the user to a login page instead.
-  isLoggedIn(tabUrl, base) {
-    return tabUrl.startsWith(base) && !tabUrl.includes("/login");
+  // TODO: true for a page you only see when logged in, false for the login
+  // page. If the session expires mid-run, the run pauses until this is true.
+  isLoggedIn(tabUrl) {
+    return tabUrl.startsWith("https://app.example.com/") && !tabUrl.includes("/login");
   },
 
   // TODO: the address of an empty "new record" form for this object. For a

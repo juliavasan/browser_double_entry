@@ -1,5 +1,5 @@
 import { ADAPTERS } from "./adapters/index.js";
-import { enterRecord, findBaseUrl } from "./lib/engine.js";
+import { enterRecord, findBaseUrl, waitForLogin } from "./lib/engine.js";
 import { readRecordsFromFile } from "./lib/files.js";
 import { InputError, walk } from "./lib/input.js";
 
@@ -34,6 +34,8 @@ let records = [];
 let rows = new Map(); // record → its table row
 let report = [];
 let running = false;
+let stopper = null; // AbortController for the current run
+let workTabId = null;
 
 // --- Connection: which Salesforce org the records will go to ---
 
@@ -187,12 +189,15 @@ ui.start.addEventListener("click", async () => {
 
   const appTab = await chrome.tabs.getCurrent();
   let workTab;
+  stopper = new AbortController();
+  $("stop").disabled = false;
   try {
     const bases = {};
     for (const system of new Set([...walk(records)].map((r) => r.system))) {
       bases[system] = await findBaseUrl(ADAPTERS[system]);
     }
     workTab = await chrome.tabs.create({ url: "about:blank", active: true });
+    workTabId = workTab.id;
     await enterAll(records, null, bases, workTab.id, total);
     showSummary(bases);
   } catch (e) {
@@ -202,7 +207,9 @@ ui.start.addEventListener("click", async () => {
     if (workTab) await chrome.tabs.remove(workTab.id).catch(() => {});
     await chrome.tabs.update(appTab.id, { active: true });
     ui.runProgress.hidden = true;
+    showLoginPause(false);
     $("clear-file").hidden = false;
+    workTabId = null;
     running = false;
     updateStart();
   }
@@ -215,16 +222,12 @@ async function enterAll(list, parent, bases, tabId, total) {
     const row = rows.get(record);
     row.classList.add("current");
     let result;
-    if (parent && !parent.id) {
+    if (stopper.signal.aborted) {
+      result = { ok: false, skipped: true, message: "Not created: the run was stopped" };
+    } else if (parent && !parent.id) {
       result = { ok: false, skipped: true, message: `${parent.name} was not saved` };
     } else {
-      setStatus(row, "working", "Saving…");
-      updateProgress(report.length, total, `Saving ${recordName(record)}`);
-      try {
-        result = await enterRecord(ADAPTERS[record.system], bases[record.system], tabId, record, parent);
-      } catch (e) {
-        result = { ok: false, message: e.message };
-      }
+      result = await enterWithLogin(record, parent, bases, tabId, total);
     }
     row.classList.remove("current");
     showResult(row, result);
@@ -242,6 +245,62 @@ async function enterAll(list, parent, bases, tabId, total) {
     await enterAll(record.children, { object: record.object, id: result.id, name: recordName(record) }, bases, tabId, total);
   }
 }
+
+// Enters one record. If the session has expired, Salesforce shows its login
+// page in the work tab: pause there until the user has logged in, then try the
+// same record again. Nothing was entered for it yet, so nothing is duplicated.
+async function enterWithLogin(record, parent, bases, tabId, total) {
+  const adapter = ADAPTERS[record.system];
+  const row = rows.get(record);
+  for (;;) {
+    setStatus(row, "working", "Saving…");
+    updateProgress(report.length, total, `Saving ${recordName(record)}`);
+    let result;
+    try {
+      result = await enterRecord(adapter, bases[record.system], tabId, record, parent);
+    } catch (e) {
+      if (/tab was closed|No tab with id/i.test(e.message)) {
+        stopper.abort();
+        return { ok: false, skipped: true, message: "Not created: the Salesforce tab was closed" };
+      }
+      return { ok: false, message: e.message };
+    }
+    if (!result.needsLogin) return result;
+
+    setStatus(row, "working", "Waiting for you to log in");
+    updateProgress(report.length, total, `Paused: log in to ${adapter.label} to continue`);
+    showLoginPause(true, adapter);
+    let loggedIn;
+    try {
+      loggedIn = await waitForLogin(adapter, tabId, stopper.signal);
+    } catch {
+      stopper.abort();
+      loggedIn = false;
+    }
+    showLoginPause(false);
+    if (!loggedIn) return { ok: false, skipped: true, message: "Not created: the run was stopped" };
+  }
+}
+
+// While paused for a login: a banner on this page, and "!" on the toolbar
+// icon, which shows on every tab, including the Salesforce login page.
+function showLoginPause(paused, adapter) {
+  $("login-pause").hidden = !paused;
+  if (paused) $("login-pause-system").textContent = adapter.label;
+  chrome.action?.setBadgeText({ text: paused ? "!" : "" }).catch(() => {});
+  if (paused) chrome.action?.setBadgeBackgroundColor({ color: "#b26a00" }).catch(() => {});
+  chrome.action?.setTitle({ title: paused ? `Bulk Entry is paused: log in to ${adapter.label} to continue` : "Bulk Entry for Salesforce" }).catch(() => {});
+}
+
+$("goto-work-tab").addEventListener("click", () => {
+  if (workTabId != null) chrome.tabs.update(workTabId, { active: true });
+});
+
+$("stop").addEventListener("click", () => {
+  stopper?.abort();
+  $("stop").disabled = true;
+  ui.progressText.textContent = "Stopping after the current record…";
+});
 
 function showResult(row, result) {
   if (result.ok) {

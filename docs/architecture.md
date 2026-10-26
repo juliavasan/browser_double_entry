@@ -22,7 +22,11 @@ spreadsheet or JSON → app page (app.js) → engine (lib/engine.js) → work ta
    asks the user to log in and keeps the Create button disabled.
 3. **Enter each record.** In one work tab, for each record:
    1. Open the adapter's `newRecordUrl`. For a child, the parent's ID goes in it.
-   2. Check the session didn't expire (`isLoggedIn`).
+   2. Check the session didn't expire (`isLoggedIn`). If the login page shows
+      instead, the run pauses: the page explains it, the toolbar icon shows
+      "!", and the run waits for the work tab to reach a logged-in page again,
+      then retries the same record. Nothing was entered for it, so nothing is
+      duplicated. **Stop** ends the run and marks the rest as not created.
    3. Run `fillForm` inside the page: wait for the save button, fill each field
       found by `inputSelector`, click save.
    4. Wait until the address shows a saved record (`savedRecordId`). If it
@@ -60,6 +64,9 @@ spreadsheet or JSON → app page (app.js) → engine (lib/engine.js) → work ta
 - **Native value setter plus events.** Setting `value` directly isn't noticed by
   frameworks like React or Lightning; the native setter followed by `input` and
   `change` events is.
+- **Listen for address changes instead of polling.** Chrome slows down
+  timers in background tabs, and the app page is in the background while the
+  work tab is shown, so waits use `chrome.tabs.onUpdated` events.
 - **Wait for the form, not the network.** Single-page apps keep connections
   open, so "network idle" never comes. The engine waits for the save button.
 - **Link children through the address.** Prefilling the parent from the form's
