@@ -33,7 +33,7 @@
 - [x] 17. Only logged-in Salesforce pages count as connected (fixes every record failing with "log in again")
 - [x] 18. If Salesforce asks for a login mid-run, pause on the login page and continue by itself after login
 - [x] 19. Stop button to end a run
-- [ ] 20. Run `bulk-entry-test.xlsx` (5 Accounts, 13 Contacts) against the real org
+- [x] 20. Run `bulk-entry-test.xlsx` (5 Accounts, 13 Contacts) against the real org
 
 ## Docs and sharing
 
