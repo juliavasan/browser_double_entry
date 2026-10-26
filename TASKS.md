@@ -70,6 +70,14 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 45. Make logging in to Salesforce step 1, with a "Log in to Salesforce first" prompt when not connected
 - [ ] 42. Reload the extension and run `examples/accounts-contacts.xlsx`
 
+## Phase 7: Distribution without the Chrome Web Store
+
+- [x] 46. `npm run package` builds a zip with one `bulk-entry-for-salesforce` folder to load
+- [x] 47. Write `INSTALL.md` for non-technical users: download, Load unpacked, use, update, remove, troubleshooting
+- [x] 48. Publish GitHub release v0.1.0 with the zip
+- [ ] 49. Try the install steps on another computer or Chrome profile
+- [ ] 50. Optional: publish to the Chrome Web Store (one-time $5 fee) so users can install with one click
+
 ## Later
 
 - [ ] 11. Add a second example adapter, to show adapting to a different app

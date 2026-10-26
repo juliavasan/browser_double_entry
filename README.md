@@ -26,6 +26,14 @@ The tradeoff: filling in forms breaks more easily than an API when the app's
 screens change, and complex fields (lookups, dropdowns, date pickers) need
 extra code. See [Limitations](#limitations).
 
+## Install
+
+To use it without the source code, follow [INSTALL.md](INSTALL.md): download
+the zip from the [latest release](https://github.com/juliavasan/bulk-entry-extension/releases/latest)
+and add it to Chrome with **Load unpacked**. It isn't in the Chrome Web Store.
+
+To build that zip yourself: `npm run package` (writes `dist/bulk-entry-for-salesforce-v<version>.zip`).
+
 ## Try it with Salesforce
 
 1. Get a free Salesforce Developer Edition at
