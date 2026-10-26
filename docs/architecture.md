@@ -2,10 +2,10 @@
 
 ## Goal
 
-Show how a browser extension can enter many records into a web app from one
-file, by filling in the app's own forms. People type the same kinds of records
-in by hand, one form at a time; this does it for them, in their own logged-in
-browser session.
+Create many Salesforce Accounts and their Contacts from one spreadsheet, by
+filling in Salesforce's own forms in the user's logged-in session. It's an
+example of bulk data entry with a browser extension, built so the engine can be
+reused for other apps.
 
 ## Flow
 
@@ -17,8 +17,9 @@ spreadsheet or JSON → app page (app.js) → engine (lib/engine.js) → work ta
 1. **Pick a file.** `lib/files.js` picks the reader by file type: `lib/table.js`
    turns an Excel or CSV sheet into records, and `lib/input.js` reads JSON.
    Every record is checked, children included. The page shows how many records of each object are ready.
-2. **Find the system.** For each system in the file, the engine finds a tab the
-   user already has open and logged in, and takes the system's address from it.
+2. **Find the system.** The page looks for a tab the user already has open and
+   logged in to, and takes the system's address from it. Until it finds one, it
+   asks the user to log in and keeps the Create button disabled.
 3. **Enter each record.** In one work tab, for each record:
    1. Open the adapter's `newRecordUrl`. For a child, the parent's ID goes in it.
    2. Check the session didn't expire (`isLoggedIn`).
@@ -28,8 +29,9 @@ spreadsheet or JSON → app page (app.js) → engine (lib/engine.js) → work ta
       doesn't, read the page's error messages (`errorSelector`).
 4. **Children.** After a record is saved, its children are entered with its ID as
    their parent. If it wasn't saved, they're marked as skipped.
-5. **Report.** Each record gets a row with ✓ and a link, ✗ and the reason, or –
-   for skipped. The results can be saved as a JSON file.
+5. **Results.** Each row shows Saved with a link, Failed with the reason, or
+   Skipped. Totals, a link to the records in Salesforce and a downloadable
+   results file follow.
 
 ## Components
 
@@ -37,7 +39,7 @@ spreadsheet or JSON → app page (app.js) → engine (lib/engine.js) → work ta
 | --- | --- |
 | `manifest.json` | Name and permissions: `scripting`, plus the app's domains only |
 | `background.js` | Toolbar icon opens the app page in a tab |
-| `app.html`, `app.js` | File picker, run, results table, download |
+| `app.html`, `app.css`, `app.js` | The page: login check, upload, records table, progress, results |
 | `lib/input.js` | JSON reading and validation, `walk()` over records and children |
 | `lib/table.js` | Spreadsheet rows (`Object.Field` columns, one row per child) into records; CSV parser |
 | `lib/files.js` | Chooses the reader by file extension; reads Excel with SheetJS (`vendor/`) |

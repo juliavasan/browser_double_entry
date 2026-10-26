@@ -10,7 +10,7 @@ Python command that drove Chrome over CDP. Entered 3 test contacts into Salesfor
 - [x] 4. Confirm the GitHub account
 - [x] 5. Pick the email for commits
 - [x] 6. Get a Salesforce org to test in (Developer Edition)
-- [x] 7. Pick the first object and fields: Contact with FirstName, LastName, Email, Phone, Title (`examples/contacts.json`)
+- [x] 7. Pick the first object and fields: Contact with FirstName, LastName, Email, Phone, Title
 - [x] 8. Start Chrome with remote debugging and log in to the test org in that window
 - [x] 9. Run the dry run
 - [x] 10. Run it for real and share the report
@@ -36,7 +36,6 @@ Enter a company and its people in one go. The JSON nests contacts under their ac
 - [x] 21. Choose the parent–child example: Account → Contacts (standard objects, no setup)
 - [x] 22. Add `children` to the JSON format
 - [x] 23. Create the sample file `examples/accounts-contacts.json` (2 accounts, 5 contacts)
-- [ ] 24. ~~Run it with the Python tool~~ (Python tool removed)
 - [x] 25. Run it with the extension and check each contact is linked to its account
 
 ## Phase 4: Clean up as a reusable example
@@ -57,7 +56,6 @@ The project's goal is now an example of bulk data entry with a browser extension
 
 - [x] 35. Redesign the page for Salesforce Account + Contact bulk entry: connection status, drag-and-drop file, review table, live progress, results summary, light and dark mode
 - [x] 36. Add a toolbar icon and a downloadable sample file
-- [ ] 37. Reload the extension and run `examples/accounts-contacts.json` with the new interface
 
 ## Phase 6: Excel and CSV files
 

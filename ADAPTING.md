@@ -1,8 +1,10 @@
 # Adapting it to your system
 
+Bulk Entry for Salesforce is an example: it creates Accounts and their
+Contacts. You can point it at other Salesforce objects or at another web app.
 The extension has two parts:
 
-- **The engine** (`extension/lib/`, `app.js`) reads the JSON, opens forms, fills
+- **The engine** (`extension/lib/`, `app.js`) reads the file, opens forms, fills
   them in, saves, links children to parents and reports results. You shouldn't
   need to change it.
 - **An adapter** (`extension/adapters/<system>.js`) describes one system: where
@@ -22,7 +24,7 @@ about 40 lines.
 | 4b | `extension/app.js`, `readRecordsFromFile(file, "salesforce")` | Spreadsheets have no system column: change `"salesforce"` to your adapter's `name` |
 | 5 | `extension/app.html`, `manifest.json` | The page text, name and description are written for Salesforce Accounts and Contacts: change them to describe your system and objects |
 | 6 | `extension/sample.*`, `icons/` | Replace the downloadable sample files with ones for your objects, and optionally the icon |
-| 7 | `extension/app.js`, `recordName()` and `recordDetails()` | Optional: which fields name and describe a record in the review table |
+| 7 | `extension/app.js`, `recordName()` and `recordDetails()` | Optional: which fields name and describe a record in the records table |
 
 Only adding objects or fields to a system that already has an adapter, such as
 more Salesforce objects? Usually only step 4 changes. Fields whose form input is

@@ -7,7 +7,7 @@ import { parseRecords, walk } from "../extension/lib/input.js";
 const parse = (data) => parseRecords(JSON.stringify(data));
 
 test("reads the example files", () => {
-  for (const file of ["contacts.json", "accounts-contacts.json"]) {
+  for (const file of ["accounts-contacts.json"]) {
     const records = parseRecords(readFileSync(new URL(`../examples/${file}`, import.meta.url), "utf8"));
     assert.ok(records.length > 0, file);
   }
