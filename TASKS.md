@@ -82,7 +82,7 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 52. If Salesforce asks for a login mid-run, pause on the login page, show it on the page and the toolbar icon, and continue by itself after login
 - [x] 53. Add a Stop button to end a run; the rest are marked not created
 - [ ] 54. Run `bulk-entry-test.xlsx` (5 Accounts, 13 Contacts) for real
-- [ ] 55. Release v0.1.1 with the fix
+- [x] 55. Release v0.1.1 with the fix
 
 ## Later
 
