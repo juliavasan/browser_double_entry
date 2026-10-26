@@ -67,6 +67,7 @@ The project's goal is now an example of bulk data entry with a browser extension
 - [x] 41. Simplify the page around spreadsheets: example table and three rules; JSON as an option
 - [x] 43. Simplify the page: steps are Prepare your file → Upload it → Check the results; say it's a Salesforce utility and an example project
 - [x] 44. Page: just the upload area under the steps, with Excel, CSV and JSON sample files to download (no example table)
+- [x] 45. Make logging in to Salesforce step 1, with a "Log in to Salesforce first" prompt when not connected
 - [ ] 42. Reload the extension and run `examples/accounts-contacts.xlsx`
 
 ## Later

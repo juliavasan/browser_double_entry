@@ -43,7 +43,7 @@ async function checkConnection() {
   for (const system of systems) {
     const base = await findBaseUrl(ADAPTERS[system]);
     if (!base) {
-      setConnection("missing", `Not connected: open ${ADAPTERS[system].label} in this browser and log in`);
+      setConnection("missing", `Not connected to ${ADAPTERS[system].label}`);
       return false;
     }
     found.push(new URL(base).hostname.split(".")[0]);
@@ -56,6 +56,7 @@ function setConnection(state, text) {
   ui.connection.dataset.state = state;
   ui.connectionText.textContent = text;
   ui.recheck.hidden = state !== "missing";
+  $("login-notice").hidden = state !== "missing";
   updateStart();
 }
 

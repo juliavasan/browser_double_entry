@@ -78,7 +78,7 @@ main { max-width: 880px; margin: 0 auto; padding: 32px 24px 16px; }
 .intro h1 { font-size: 24px; margin-bottom: 8px; }
 .intro > p { color: var(--muted); max-width: 680px; margin: 0 0 12px; font-size: 15px; }
 .intro > p.example-note { font-size: 13px; margin-bottom: 20px; }
-.steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .steps li { display: flex; gap: 10px; align-items: flex-start; }
 .steps strong { display: block; font-size: 13.5px; }
 .steps span:not(.step-num) { color: var(--muted); font-size: 12.5px; }
@@ -97,6 +97,14 @@ main { max-width: 880px; margin: 0 auto; padding: 32px 24px 16px; }
 .card-head h2 { font-size: 16px; display: flex; align-items: center; }
 .link { color: var(--accent); text-decoration: none; font-size: 13px; font-weight: 500; }
 .link:hover { text-decoration: underline; }
+
+.login-notice {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  padding: 12px 16px; margin-bottom: 16px; border-radius: 8px;
+  background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+}
+.login-notice strong { display: block; }
+.login-notice span { color: var(--muted); font-size: 13px; }
 
 /* Drop zone */
 .dropzone {
@@ -215,6 +223,6 @@ footer {
   .topbar { padding: 10px 16px; flex-wrap: wrap; }
   main { padding: 24px 16px 8px; }
   footer { padding: 8px 16px 32px; }
-  .steps { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
   td.details, th:nth-child(4) { display: none; }
 }
