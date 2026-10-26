@@ -1,89 +1,54 @@
 # Progress
 
-## Phase 1: Python POC (done)
+## Salesforce setup
 
-Python command that drove Chrome over CDP. Entered 3 test contacts into Salesforce on 2026-10-25. Removed in Phase 4 (still in git history).
+- [x] 1. Get a Salesforce Developer Edition org and log in to it in Chrome
+- [x] 2. Pick the records to create: Accounts and their Contacts (standard objects, no setup)
 
-- [x] 1. Log in to GitHub from the terminal
-- [x] 2. Create the public repo
-- [x] 3. Confirm the tool drives the browser over CDP (not the Salesforce API)
-- [x] 4. Confirm the GitHub account
-- [x] 5. Pick the email for commits
-- [x] 6. Get a Salesforce org to test in (Developer Edition)
-- [x] 7. Pick the first object and fields: Contact with FirstName, LastName, Email, Phone, Title
-- [x] 8. Start Chrome with remote debugging and log in to the test org in that window
-- [x] 9. Run the dry run
-- [x] 10. Run it for real and share the report
+## Extension
 
-## Phase 2: Chrome extension
+- [x] 3. Create the Chrome extension (Manifest V3), with access to the Salesforce domains only
+- [x] 4. Fill in and save Salesforce's New Account and New Contact forms from a page script
+- [x] 5. Link each Contact to its Account by opening its form with the Account already filled in
+- [x] 6. Skip a Contact whose Account wasn't saved, and say why
+- [x] 7. Split a generic engine (`extension/lib/`) from the Salesforce adapter (`extension/adapters/`), with a template for other systems
+- [x] 8. Load it unpacked in Chrome and create test Accounts and Contacts
 
-Users can't run commands in a terminal, so the tool moved into a Chrome extension. It runs in the user's normal browser and login, with no CDP and no debugging port.
+## Files
 
-- [x] 12. Create the extension (Manifest V3), with permission only for the Salesforce domains
-- [x] 13. App page: choose a JSON file, check it, show how many records are ready
-- [x] 14. Fill in and save the Salesforce form from a page script
-- [x] 15. Show results with a link to each record, and let the user save them as a file
-- [x] 16. Load it unpacked in Chrome and enter test records successfully
-- [ ] 17. Test harder field types: lookup, picklist, date
-- [x] 18. Write install and usage steps (README)
-- [ ] 19. Write security notes for IT review: permissions used, no outside network calls
-- [ ] 20. Ask IT how extensions get approved and installed, and whether "Load unpacked" is allowed
+- [x] 9. Read JSON files of Accounts with their Contacts
+- [x] 10. Read Excel and CSV files: one row per Contact, `Object.Field` columns, empty Account cells continue the Account above
+- [x] 11. Sample files (Excel, CSV, JSON) in `examples/`, downloadable from the page
 
-## Phase 3: Parent and child records (Account → Contacts)
+## Page
 
-Enter a company and its people in one go. The JSON nests contacts under their account; the extension saves the account first, then opens each contact's form with the account already filled in.
+- [x] 12. Steps: log in to Salesforce, prepare your file, upload it, check the results
+- [x] 13. Show which org it's connected to, and a "Log in to Salesforce first" prompt when it isn't
+- [x] 14. Upload area, records to create, live status per record, progress and results with links
+- [x] 15. Clear sample files section, separate from uploading
+- [x] 16. Light and dark mode, toolbar icon
 
-- [x] 21. Choose the parent–child example: Account → Contacts (standard objects, no setup)
-- [x] 22. Add `children` to the JSON format
-- [x] 23. Create the sample file `examples/accounts-contacts.json` (2 accounts, 5 contacts)
-- [x] 25. Run it with the extension and check each contact is linked to its account
+## Logins during a run
 
-## Phase 4: Clean up as a reusable example
+- [x] 17. Only logged-in Salesforce pages count as connected (fixes every record failing with "log in again")
+- [x] 18. If Salesforce asks for a login mid-run, pause on the login page and continue by itself after login
+- [x] 19. Stop button to end a run
+- [ ] 20. Run `bulk-entry-test.xlsx` (5 Accounts, 13 Contacts) against the real org
 
-The project's goal is now an example of bulk data entry with a browser extension, which others copy and adapt to their own system and objects.
+## Docs and sharing
 
-- [x] 26. Rename: repo `bulk-entry-extension`, extension "Bulk Entry"
-- [x] 27. Remove the Python tool and its CDP setup
-- [x] 28. Split a generic engine (`extension/lib/`) from per-system adapters (`extension/adapters/`)
-- [x] 29. Add `adapters/template.js`, a commented starting point for a new system
-- [x] 30. Write `ADAPTING.md`: what to change, and how to find selectors in your own app
-- [x] 31. Replace the Python tests with Node tests (`npm test`), including a check that every adapter is complete
-- [x] 32. Rename the GitHub repo to `bulk-entry-extension`
-- [x] 33. Reload the extension and run `examples/accounts-contacts.json` with the cleaned-up code
-- [x] 34. Add a license (MIT)
-
-## Phase 5: Professional interface
-
-- [x] 35. Redesign the page for Salesforce Account + Contact bulk entry: connection status, drag-and-drop file, review table, live progress, results summary, light and dark mode
-- [x] 36. Add a toolbar icon and a downloadable sample file
-
-## Phase 6: Excel and CSV files
-
-- [x] 38. Spreadsheet format: `Object.Field` columns, one row per Contact, empty Account cells continue the Account above
-- [x] 39. Read CSV (own parser) and Excel (bundled SheetJS, no network)
-- [x] 40. Add `examples/accounts-contacts.xlsx` and `.csv`, downloadable from the page
-- [x] 41. Simplify the page around spreadsheets: example table and three rules; JSON as an option
-- [x] 43. Simplify the page: steps are Prepare your file → Upload it → Check the results; say it's a Salesforce utility and an example project
-- [x] 44. Page: just the upload area under the steps, with Excel, CSV and JSON sample files to download (no example table)
-- [x] 45. Make logging in to Salesforce step 1, with a "Log in to Salesforce first" prompt when not connected
-- [ ] 42. Reload the extension and run `examples/accounts-contacts.xlsx`
-
-## Phase 7: Distribution without the Chrome Web Store
-
-- [x] 46. `npm run package` builds a zip with one `bulk-entry-for-salesforce` folder to load
-- [x] 47. Write `INSTALL.md` for non-technical users: download, Load unpacked, use, update, remove, troubleshooting
-- [x] 48. Publish GitHub release v0.1.0 with the zip
-- [ ] 49. Try the install steps on another computer or Chrome profile
-- [ ] 50. Optional: publish to the Chrome Web Store (one-time $5 fee) so users can install with one click
-
-## Phase 8: Handle Salesforce logins during a run
-
-- [x] 51. Fix: every record failed with "log in again", because a login or Setup page on `my.salesforce.com` counted as connected and the redirect to `lightning.force.com` looked like a logout
-- [x] 52. If Salesforce asks for a login mid-run, pause on the login page, show it on the page and the toolbar icon, and continue by itself after login
-- [x] 53. Add a Stop button to end a run; the rest are marked not created
-- [ ] 54. Run `bulk-entry-test.xlsx` (5 Accounts, 13 Contacts) for real
-- [x] 55. Release v0.1.1 with the fix
+- [x] 21. README: the use case, that this is an example, file format, limitations
+- [x] 22. `ADAPTING.md`: how to adapt it to other objects or apps
+- [x] 23. `INSTALL.md` for non-technical users, and `npm run package` for the zip
+- [x] 24. MIT license
+- [x] 25. GitHub release v0.1.1 with the zip
+- [ ] 26. Release the latest page changes (clearer sample files) as v0.1.2
+- [ ] 27. Try the install steps on another computer or Chrome profile
+- [ ] 28. Record a demo video
 
 ## Later
 
-- [ ] 11. Add a second example adapter, to show adapting to a different app
+- [ ] 29. Support dropdown, lookup and date fields
+- [ ] 30. Security notes for IT review: permissions used, no outside network calls
+- [ ] 31. Optional: publish to the Chrome Web Store (one-time $5 fee) for one-click install
+- [ ] 32. Add a second example adapter, to show adapting to a different app
